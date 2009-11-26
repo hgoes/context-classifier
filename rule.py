@@ -10,12 +10,13 @@ class ClassifierSet:
         rst = None
         prob = 0
         for classifier in self.classifiers:
-            (st,prob) = classifier.evaluate(v)
-            if prob > 0:
-                rst = st
-                print "Classifier",classifier.name,"matched with state",st,"and value",prob
-                break
-            print "Classifier",classifier.name,"didn't match"
+            (st,max,cprob) = classifier.evaluate(v)
+            #if cprob > 0:
+            #    prob = cprob
+            #    rst = st
+                #print "Classifier",classifier.name,"matched with state",st,"and value",prob
+            #    break
+            #print "Classifier",classifier.name,"didn't match"
             pos += 1
         if rst is not None:
             if pos!=0:
@@ -33,7 +34,7 @@ class Classifier:
         self.name = name
     def evaluate(self,v):
         g = self.ruleset.evaluate(v)
-        print "Classifier ",self.name,"produced value",g
+        #print "Classifier ",self.name,"produced value",g
         max = 0
         max_el = None
         for (k,f) in self.membership:
@@ -41,7 +42,7 @@ class Classifier:
             if max < r:
                 max = r
                 max_el = k
-        return (max_el,max)
+        return (max_el,max,g)
 
 class RuleSet:
     def __init__(self,rules):
@@ -52,6 +53,8 @@ class RuleSet:
         for rule in self.rules:
             w = rule.weight(v)
             e = rule.evaluate(v)
+            #print "Weight",w
+            #print "Res",e
             r += w*e
             d += w
         return r/d
@@ -80,6 +83,7 @@ def parse_rules(f):
             bitvec = np.array(map(bit,cfgparser.get(rule,"bitvec").split())).nonzero()
         else:
             bitvec = None
+        bitvec = None
         result = np.array(cons[0:-1])
         roff = cons[-1]
         rules.append(ComplexRule(result,roff,means,var,bitvec))
