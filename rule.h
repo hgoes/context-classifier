@@ -1,6 +1,8 @@
 /**
  * @file
  * Implements the rule engine.
+ * A rule \f$R\f$ of length \f$n\f$ consists of a result vector (\f$r(R)\f$) of length \f$n+1\f$, a covariance matrix (\f$\Sigma(R)\f$) of size \f$n\cdot n\f$ and a mean vector (\f$m(R)\f$) of length \f$n\f$.
+ * 
  */
 #ifndef __RULE_H__
 #define __RULE_H__
@@ -47,18 +49,21 @@ void destroy_rule(rule_t* rule);
 void print_rule(rule_t* rule);
 
 /**
- * Applies a rule on a feature vector.
+ * Applies a rule \f$R\f$ on a feature vector \f$v\f$.
+ * \f[ f(R,v) = r(R)_n + \sum_{i=0}^{n} r(R)_i\cdot v_i \f]
  * @param vec The feature vector
  */
 double evaluate_rule(const rule_t* rule,const double* vec);
 /**
  * Calculates the weight of a rule.
+ * \f[ \mu(R,v) = e^{-\frac12 (v - m(R)) \Sigma^{-1} (v - m(R))^T} \f]
  * @param vec The feature vector
  */
 double weigh_rule(const rule_t* rule,const double* vec);
 
 /**
  * Apply a set of rules on a feature vector.
+ * \f[ S(R,v) = \frac{\sum_{j=1}^m \mu(R_j,v)\cdot f(R_j,v)}{\sum_{j=1}^m \mu(R_j,v)} \f]
  * @param nrules The number of rules
  * @param rules The array containing the rules
  * @param vec The feature vector
