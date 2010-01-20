@@ -7,7 +7,6 @@ if(INT_FFT AND ${AUDIO_FORMAT} STREQUAL "DOUBLE")
   message(FATAL_ERROR "Integer FFT and double audio format not supported")
 endif()
 
-
 set(CMAKE_C_COMPILER arm-linux-gnueabi-gcc)
 
 if(INT_FFT)

@@ -1,3 +1,9 @@
+/**
+ * @file
+ * The audio subsystem. Responsible for extracting audio feature
+ * vectors from the hardware.
+ */
+
 #ifndef __AUDIO_H__
 #define __AUDIO_H__
 
@@ -18,6 +24,10 @@
 // Alsa stuff
 #include <alsa/asoundlib.h>
 
+/**
+ * The audio system type, contains all data to manage the audio
+ * hardware and perform preprocessing.
+ */
 typedef struct {
   snd_pcm_t* handle;
 #ifdef INT_FFT
@@ -34,8 +44,19 @@ typedef struct {
 #endif
 } audio_system;
 
+/**
+ * Initialize the audio system. Allocate memory, set parameters, etc.
+ */
 int init_audio_system(audio_system* sys);
+/**
+ * Destroy the audio system. Free resources, memory, etc.
+ */
 void destroy_audio_system(audio_system* sys);
+/**
+ * Generate one audio feature vector.
+ * @param vec The target for the feature vector. Must be long enough to store it.
+ * @return 0 if a vector was succesfully fetched, <0 otherwise
+ */
 int fetch_audio_sample(audio_system* sys,double* vec);
 const char* audio_error(int code);
 

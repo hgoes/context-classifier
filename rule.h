@@ -1,3 +1,7 @@
+/**
+ * @file
+ * Implements the rule engine.
+ */
 #ifndef __RULE_H__
 #define __RULE_H__
 
