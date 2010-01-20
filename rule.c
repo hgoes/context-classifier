@@ -44,11 +44,11 @@ double weigh_rule(const rule_t* rule,const double* vec) {
   for(i=0;i<n;i++) {
     double tmp = 0;
     for(j=0;j<n;j++) {
-      printf("%lf ",t[j]);
+      //printf("%lf ",t[j]);
       //printf("TMP: %d %lf\n",j,t[j]);
       tmp+=rule->covar[i*n+j]*t[j];
     }
-    printf("\n");
+    //printf("\n");
     res += t[i]*tmp;
   }
   free(t);
@@ -63,7 +63,7 @@ double evaluate_ruleset(int nrules,const rule_t* rules,const double* vec) {
   for(i=0;i<nrules;i++) {
     double w = weigh_rule(&rules[i],vec);
     double e = evaluate_rule(&rules[i],vec);
-    printf("EVAL %d: %lf, %lf\n",i,w,e);
+    //printf("EVAL %d: %lf, %lf\n",i,w,e);
     r += w*e;
     d += w;
   }
@@ -150,5 +150,45 @@ int parse_ruleset(const char* fn,int* nrules,rule_t** rules) {
     *rules = state.rules;
     *nrules = state.nrules;
   }
+  return res;
+}
+
+rule_list_t* evaluate_classifier_rec(rule_list_t* head,rule_list_t* last,rule_list_t* cur,const double* vec,int* res_clas,double* res_val) {
+  if(cur == NULL) {
+    *res_clas = -1;
+    return head;
+  } else {
+    double eval = evaluate_ruleset(cur->nrules,cur->rules,vec);
+    int i;
+    for(i=0;i<cur->nmembers;i++) {
+      if(abs(cur->avgs[i] - eval) < FUZZY_VARIANCE) {
+	*res_clas = cur->ress[i];
+	*res_val  = eval;
+	if(last == NULL) {
+	  //cur is the first entry
+	  return head;
+	} else {
+	  last->next = cur->next;
+	  cur->next = head;
+	  return cur;
+	}
+      }
+    }
+    return evaluate_classifier_rec(head,cur,cur->next,vec,res_clas,res_val);
+  }
+}
+
+rule_list_t* evaluate_classifier(rule_list_t* rl,const double* vec,int* res_clas,double* res_val) {
+  return evaluate_classifier_rec(rl,NULL,rl,vec,res_clas,res_val);
+}
+
+rule_list_t* rule_list_add(rule_list_t* rl,int nrules,rule_t* rules,int nmembers,double* avgs,int* ress) {
+  rule_list_t* res = malloc(sizeof(rule_list_t));
+  res->nrules = nrules;
+  res->rules = rules;
+  res->nmembers = nmembers;
+  res->avgs = avgs;
+  res->ress = ress;
+  res->next = rl;
   return res;
 }

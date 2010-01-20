@@ -1,6 +1,9 @@
 #ifndef __MOVEMENT_H__
 #define __MOVEMENT_H__
 
+#include "config.h"
+#include "performance.h"
+
 #include <stdio.h>
 #include <time.h>
 #include <sys/times.h>
@@ -18,5 +21,6 @@ struct input_event {
 };
 
 int fetch_entry(int fd, uint16_t* x,uint16_t* y,uint16_t* z);
+int fetch_movement_sample(int fd,double* vec);
 
 #endif

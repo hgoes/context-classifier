@@ -4,10 +4,17 @@
 #include <stdint.h>
 #include "config.h"
 
-#if NATIVE_AUDIO_FORMAT == S16
+#ifdef NATIVE_AUDIO_FORMAT_S16
 typedef int16_t audio_t;
 #define PCM_FORMAT SND_PCM_FORMAT_S16_LE
-#else
+#endif
+
+#ifdef NATIVE_AUDIO_FORMAT_DOUBLE
+typedef double audio_t;
+#define PCM_FORMAT SND_PCM_FORMAT_FLOAT64
+#endif
+
+#ifndef PCM_FORMAT
 #error "No native audio format defined"
 #endif
 

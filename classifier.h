@@ -4,6 +4,9 @@
 #include "audio.h"
 #include "rule.h"
 #include "ini_parser.h"
+#include "movement.h"
+#include "performance.h"
 #include <stdio.h>
+#include <unistd.h>
 
 #endif

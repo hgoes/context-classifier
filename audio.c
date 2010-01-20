@@ -11,14 +11,14 @@ inline void audio_buffer_to_double(audio_t* from,double* to,int sz) {
   }
 }
 
-void calculate_statistics(fftw_complex* from,int sz,double* mean,double* var,double* centr) {
+void calculate_statistics(complex_type* from,int sz,double* mean,double* var,double* centr) {
   int i;
   double value;
   double acc = 0;
   double accf = 0;
   double accp = 0;
   for(i=0;i<sz;i++) {
-    value = sqrt(from[i][0]*from[i][0] + from[i][1]*from[i][1]);
+    value = sqrt((double)(COMPLEX_R(from[i])*COMPLEX_R(from[i]) + COMPLEX_I(from[i])*COMPLEX_I(from[i])));
     //printf("%d: %f %f %f\n",i,value,from[i][0],from[i][1]);
     acc += value;
     accf += (i+1)*value*value;
@@ -28,7 +28,7 @@ void calculate_statistics(fftw_complex* from,int sz,double* mean,double* var,dou
   *centr = accf / accp;
   acc = 0;
   for(i=0;i<sz;i++) {
-    value = sqrt(from[i][0]*from[i][0] + from[i][1]*from[i][1]);
+    value = sqrt((double)(COMPLEX_R(from[i])*COMPLEX_R(from[i]) + COMPLEX_I(from[i])*COMPLEX_I(from[i])));
     value -= *mean;
     acc += value*value;
   }
@@ -37,7 +37,12 @@ void calculate_statistics(fftw_complex* from,int sz,double* mean,double* var,dou
 
 int fetch_audio_sample(audio_system* sys,double* vec) {
   int err;
-#if NATIVE_AUDIO_FORMAT!=DOUBLE
+#ifdef INT_FFT
+  if((err = snd_pcm_readi(sys->handle, sys->buf, AUDIO_SAMPLE_COUNT)) != AUDIO_SAMPLE_COUNT) {
+    return err;
+  }
+#else
+#ifndef NATIVE_AUDIO_FORMAT_DOUBLE
   if((err = snd_pcm_readi(sys->handle, sys->buf, AUDIO_SAMPLE_COUNT)) != AUDIO_SAMPLE_COUNT) {
     return err;
   }
@@ -47,9 +52,20 @@ int fetch_audio_sample(audio_system* sys,double* vec) {
     return err;
   }
 #endif
-  fftw_execute(sys->plan);
-  calculate_statistics(sys->tbuf,AUDIO_SAMPLE_COUNT/2,&vec[0],&vec[1],&vec[2]);
-  calculate_statistics(&(sys->tbuf[AUDIO_SAMPLE_COUNT/2+1]),AUDIO_SAMPLE_COUNT/2,&vec[3],&vec[4],&vec[5]);
+#endif
+
+  MEASURED("audio preprocessing",{
+#ifdef INT_FFT
+      printf("begin FFT...\n");
+      kiss_fftr(sys->plan,sys->buf,sys->tbuf);
+      printf("end FFT.\n");
+#else
+      fftw_execute(sys->plan);
+#endif
+      /*calculate_statistics(sys->tbuf,AUDIO_SAMPLE_COUNT/2,&vec[0],&vec[1],&vec[2]);
+	calculate_statistics(&(sys->tbuf[AUDIO_SAMPLE_COUNT/2+1]),AUDIO_SAMPLE_COUNT/2,&vec[3],&vec[4],&vec[5]);*/
+      calculate_statistics(sys->tbuf,AUDIO_SAMPLE_COUNT,&vec[0],&vec[1],&vec[2]);
+    });
   return 0;
 }
 
@@ -84,7 +100,11 @@ int init_audio_system(audio_system* sys) {
   if((err = snd_pcm_prepare(sys->handle)) < 0) {
     goto error_open;
   }
+#ifdef INT_FFT
+  sys->plan = kiss_fftr_alloc(AUDIO_SAMPLE_COUNT*2,0,NULL,NULL);
+#else
   sys->plan = fftw_plan_dft_r2c_1d(AUDIO_SAMPLE_COUNT*2,sys->dbuf,sys->tbuf,0);
+#endif
   return 0;
  error_malloc:
   snd_pcm_hw_params_free(hw_params);
@@ -95,5 +115,9 @@ int init_audio_system(audio_system* sys) {
 
 void destroy_audio_system(audio_system* sys) {
   snd_pcm_close(sys->handle);
+#ifdef INT_FFT
+  kiss_fftr_free(sys->plan);
+#else
   fftw_destroy_plan(sys->plan);
+#endif
 }
