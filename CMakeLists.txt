@@ -7,7 +7,7 @@ if(INT_FFT AND ${AUDIO_FORMAT} STREQUAL "DOUBLE")
   message(FATAL_ERROR "Integer FFT and double audio format not supported")
 endif()
 
-set(CMAKE_C_COMPILER arm-linux-gnueabi-gcc)
+#set(CMAKE_C_COMPILER arm-linux-gnueabi-gcc)
 
 if(INT_FFT)
   set(FFT_SOURCES kiss_fft kiss_fftr)
@@ -15,9 +15,9 @@ else()
   set(FFT_LIB fftw3)
 endif()
 
-add_executable(test classifier audio vec rule ini_parser movement ${FFT_SOURCES})
+add_executable(test classifier audio vec rule ini_parser movement classifier_set ${FFT_SOURCES})
 
-target_link_libraries(test asound)
+target_link_libraries(test asound jansson)
 if(FFT_LIB)
   target_link_libraries(test ${FFT_LIB})
 endif()
