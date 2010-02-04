@@ -1,7 +1,16 @@
 #include "movement.h"
 
-static int read_all(int fd, char *buf, int count)
-{
+int open_accel_sensor(accel_sensor* sens,const char* dev) {
+  sens->fd = open(dev,O_RDONLY);
+  sens->last_x = 0;
+  sens->last_y = 0;
+  sens->last_z = 0;
+  return 0;
+}
+
+
+
+static int read_all(int fd, char *buf, int count) {
   int n_read = 0;
   while (n_read != count) {
     int result = read(fd, buf + n_read, count - n_read);
@@ -23,7 +32,7 @@ static int fetch_event(int fd,struct input_event* ev) {
   }
 }
 
-static void movement_statistics(const uint16_t* movement_buf,double* vec) {
+static void movement_statistics(const int32_t* movement_buf,double* vec) {
   int i;
   double meanx = 0,meany = 0,meanz = 0;
   for(i=0;i<MOVEMENT_SAMPLE_COUNT;i++) {
@@ -54,12 +63,13 @@ static void movement_statistics(const uint16_t* movement_buf,double* vec) {
   vec[5] = meanz;
 }
 
-int fetch_movement_sample(int fd,double* vec) {
-  uint16_t movement_buf[MOVEMENT_SAMPLE_COUNT*3];
+int fetch_movement_sample(accel_sensor* sens,double* vec) {
+  int32_t movement_buf[MOVEMENT_SAMPLE_COUNT*3];
   int i;
   MEASURED("movement fetching",{
       for(i=0;i<MOVEMENT_SAMPLE_COUNT;i++) {
-	int res = fetch_entry(fd,&movement_buf[i*3],&movement_buf[i*3+1],&movement_buf[i*3+2]);
+	int res = fetch_entry(sens,&movement_buf[i*3],&movement_buf[i*3+1],&movement_buf[i*3+2]);
+        //printf("Raw: [%d %d %d]\n",movement_buf[i*3],movement_buf[i*3+1],movement_buf[i*3+2]);
 	if(res < 0) return res;
       }
     });
@@ -69,25 +79,28 @@ int fetch_movement_sample(int fd,double* vec) {
   return 0;
 }
 
-int fetch_entry(int fd, uint16_t* x,uint16_t* y,uint16_t* z) {
+int fetch_entry(accel_sensor* sens, int32_t* x,int32_t* y,int32_t* z) {
   struct input_event ev;
   do {
-    if(fetch_event(fd,&ev)!=0) {
+    if(fetch_event(sens->fd,&ev)!=0) {
       return -1;
     }
     if(ev.type == 2 || ev.type == 3) {
       switch(ev.code) {
       case 0:
-	*x = ev.value;
+	sens->last_x = ev.value;
 	break;
       case 1:
-	*y = ev.value;
+	sens->last_y = ev.value;
 	break;
       case 2:
-	*z = ev.value;
+	sens->last_z = ev.value;
 	break;
       }
     }
   } while(ev.type!=0 || ev.code!=0);
+  *x = sens->last_x;
+  *y = sens->last_y;
+  *z = sens->last_z;
   return 0;
 }

@@ -14,13 +14,19 @@
 #include <assert.h>
 
 struct input_event {
-    struct timeval time;
-    uint16_t type;
-    uint16_t code;
-    int32_t value;
+  struct timeval time;
+  uint16_t type;
+  uint16_t code;
+  int32_t value;
 };
 
-int fetch_entry(int fd, uint16_t* x,uint16_t* y,uint16_t* z);
-int fetch_movement_sample(int fd,double* vec);
+typedef struct {
+  int fd;
+  int32_t last_x,last_y,last_z;
+} accel_sensor;
+
+int open_accel_sensor(accel_sensor* sens,const char* dev);
+int fetch_entry(accel_sensor* sens, int32_t* x,int32_t* y,int32_t* z);
+int fetch_movement_sample(accel_sensor* sens,double* vec);
 
 #endif
