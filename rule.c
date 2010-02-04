@@ -161,7 +161,7 @@ rule_list_t* evaluate_classifier_rec(rule_list_t* head,rule_list_t* last,rule_li
     double eval = evaluate_ruleset(cur->nrules,cur->rules,vec);
     int i;
     for(i=0;i<cur->nmembers;i++) {
-      if(abs(cur->avgs[i] - eval) < FUZZY_VARIANCE) {
+      if(fabs(cur->avgs[i] - eval) < FUZZY_VARIANCE) {
 	*res_clas = cur->ress[i];
 	*res_val  = eval;
 	if(last == NULL) {
