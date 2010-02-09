@@ -32,7 +32,7 @@ void print_rule(rule_t* rule) {
 }
 
 double evaluate_rule(const rule_t* rule,const double* vec) {
-  return rule->rvec[rule->size-1] + mult_vec_vec(rule->size-1,rule->rvec,vec);
+  return rule->rvec[rule->size] + mult_vec_vec(rule->size-1,rule->rvec,vec);
 }
 
 double weigh_rule(const rule_t* rule,const double* vec) {
