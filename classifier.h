@@ -8,5 +8,6 @@
 #include "performance.h"
 #include <stdio.h>
 #include <unistd.h>
+#include "classifier_set.h"
 
 #endif
