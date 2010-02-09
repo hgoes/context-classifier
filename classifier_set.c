@@ -37,12 +37,35 @@ static int load_array(json_t* obj,const char* field,int len,double* trg) {
   return 0;
 }
 
+static int parse_rule(json_t* obj,rule_t* rule,int dims) {
+  init_rule(rule,dims);
+  if(!json_is_object(obj)) {
+    fprintf(stderr,"all rules must be JSON objects.\n");
+    goto dealloc_rule;
+  }
+
+  if(load_array(obj,"sigma",dims*dims,rule->covar) < 0) {
+    goto dealloc_rule;
+  }
+  if(load_array(obj,"mean",dims,rule->vmean) < 0) {
+    goto dealloc_rule;
+  } 
+  if(load_array(obj,"consequence",dims+1,rule->rvec) < 0) {
+    goto dealloc_rule;
+  }
+  return 0;
+ dealloc_rule:
+  destroy_rule(rule);
+  return -1;
+}
+
 int parse_classifier_set(const char* fp,classifier_set_t* cls) {
   json_t *json;
   json_error_t error;
 
   json = json_load_file(fp, &error);
   if(!json) {
+    fprintf(stderr,"JSON parsing error in line %d: %s\n",error.line,error.text);
     return -1;
   }
   
@@ -70,7 +93,7 @@ int parse_classifier_set(const char* fp,classifier_set_t* cls) {
     fprintf(stderr,"\"classifier\" field not existent or not an array.\n");
     goto out_free_type;
   }
-  
+
   cls->rules = NULL;
   rule_list_t* last_list = NULL;
 
@@ -99,31 +122,16 @@ int parse_classifier_set(const char* fp,classifier_set_t* cls) {
     last_list->nrules = json_array_size(rules);
     last_list->rules = calloc(sizeof(rule_t),json_array_size(rules));
     unsigned int j;
-    bool err = false;
     for(j=0;j<json_array_size(rules);j++) {
-      init_rule(&(last_list->rules[j]),dims);
-      if(!err) {
-        json_t* rule = json_array_get(rules,j);
-        if(!json_is_object(rule)) {
-          fprintf(stderr,"all rules must be JSON objects.\n");
-          err = true;
-        } else {
-          if(load_array(rule,"sigma",dims*dims,last_list->rules[j].covar) < 0) {
-            err = true;
-          } else {
-            if(load_array(rule,"mean",dims,last_list->rules[j].vmean) < 0) {
-              err = true;
-            } else {
-              if(load_array(rule,"consequence",dims+1,last_list->rules[j].rvec) < 0) {
-                err = true;
-              }
-            }
-          }
+      if(parse_rule(json_array_get(rules,j),&last_list->rules[j],dims) < 0) {
+        // Destroy rules allocated so far
+        unsigned int k;
+        for(k=j;k!=0;k--) {
+          destroy_rule(&last_list->rules[k-1]);
         }
+        last_list->rules = NULL;
+        goto out_free_rules;
       }
-    }
-    if(err) {
-      goto out_free_rules;
     }
     json_t* mapping = json_object_get(cur_cls,"mapping");
     if(!mapping || !json_is_array(mapping)) {
