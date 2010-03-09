@@ -56,15 +56,13 @@ int fetch_audio_sample(audio_system* sys,double* vec) {
 
   MEASURED("audio preprocessing",{
 #ifdef INT_FFT
-      printf("begin FFT...\n");
       kiss_fftr(sys->plan,sys->buf,sys->tbuf);
-      printf("end FFT.\n");
 #else
       fftw_execute(sys->plan);
 #endif
-      /*calculate_statistics(sys->tbuf,AUDIO_SAMPLE_COUNT/2,&vec[0],&vec[1],&vec[2]);
-	calculate_statistics(&(sys->tbuf[AUDIO_SAMPLE_COUNT/2+1]),AUDIO_SAMPLE_COUNT/2,&vec[3],&vec[4],&vec[5]);*/
-      calculate_statistics(sys->tbuf,AUDIO_SAMPLE_COUNT,&vec[0],&vec[1],&vec[2]);
+      calculate_statistics(sys->tbuf,AUDIO_SAMPLE_COUNT/2,&vec[0],&vec[1],&vec[2]);
+      calculate_statistics(&(sys->tbuf[AUDIO_SAMPLE_COUNT/2+1]),AUDIO_SAMPLE_COUNT/2,&vec[3],&vec[4],&vec[5]);
+      //calculate_statistics(sys->tbuf,AUDIO_SAMPLE_COUNT,&vec[0],&vec[1],&vec[2]);
     });
   return 0;
 }
