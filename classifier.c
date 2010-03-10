@@ -87,7 +87,7 @@ int main(int argc,char** argv) {
   } else {
     movement_id = fork();
     if(movement_id == 0) {
-      //movement_thread(&running,cls_acc.rules);
+      movement_thread(&running,cls_acc.rules);
       printf("Movement thread finished!\n");
       return 0;
     }
