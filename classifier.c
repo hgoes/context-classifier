@@ -58,10 +58,13 @@ int main(int argc,char** argv) {
   printf("Class %d (%f)\n",class,res);
   */
   pid_t audio_id;
+  pid_t movement_id;
   int running = 1;
 #ifdef CPU_RUNTIME
   struct tms time_start,time_end;
+  struct timespec real_time_start,real_time_end;
   times(&time_start);
+  clock_gettime(CLOCK_MONOTONIC,&real_time_start);
 #endif
   classifier_set_t cls_acc,cls_aud;
   void exit_handler(int signal) {
@@ -80,20 +83,32 @@ int main(int argc,char** argv) {
   audio_id = fork();
   if(audio_id == 0) {
     audio_thread(&running,cls_aud.rules);
+    return 0;
   } else {
-    movement_thread(&running,cls_acc.rules);
+    movement_id = fork();
+    if(movement_id == 0) {
+      //movement_thread(&running,cls_acc.rules);
+      printf("Movement thread finished!\n");
+      return 0;
+    }
   }
   waitpid(audio_id,NULL,0);
+  waitpid(movement_id,NULL,0);
 #ifdef CPU_RUNTIME
-  if(audio_id!=0) {
-    times(&time_end);
-    double rtime = 0;
-    rtime += time_end.tms_utime - time_start.tms_utime;
-    rtime += time_end.tms_stime - time_start.tms_stime;
-    rtime += time_end.tms_cutime - time_start.tms_cutime;
-    rtime += time_end.tms_cstime - time_start.tms_cstime;
-    printf("%f seconds in CPU time\n",rtime / sysconf(_SC_CLK_TCK));
-  }
+  times(&time_end);
+  clock_gettime(CLOCK_MONOTONIC,&real_time_end);
+  double rtime = 0;
+  rtime += time_end.tms_utime - time_start.tms_utime;
+  rtime += time_end.tms_stime - time_start.tms_stime;
+  rtime += time_end.tms_cutime - time_start.tms_cutime;
+  rtime += time_end.tms_cstime - time_start.tms_cstime;
+  rtime /= sysconf(_SC_CLK_TCK);
+  printf("%f seconds in CPU time\n",rtime);
+  double rtime2 = 0;
+  rtime2 += real_time_end.tv_sec - real_time_start.tv_sec;
+  rtime2 += ((double)(real_time_end.tv_nsec - real_time_start.tv_nsec)) / 1000000000.0;
+  printf("%f seconds in real time\n",rtime2);
+  printf("%f%% load\n",100.0*rtime/rtime2);
 #endif
   return 0;
 }
