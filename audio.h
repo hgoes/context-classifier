@@ -11,8 +11,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+
 #include "types.h"
 #include "performance.h"
+#include "plugin.h"
 
 #ifdef INT_FFT
 #include "kiss_fftr.h"
@@ -69,5 +71,7 @@ typedef fftw_complex complex_type;
 #define COMPLEX_R(arg) arg[0]
 #define COMPLEX_I(arg) arg[1]
 #endif
+
+plugin_t* get_audio_plugin();
 
 #endif

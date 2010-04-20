@@ -104,3 +104,30 @@ int fetch_entry(accel_sensor* sens, int32_t* x,int32_t* y,int32_t* z) {
   *z = sens->last_z;
   return 0;
 }
+
+int fetch_acceleration_sample(accel_sensors* sens,double* vec) {
+  int res;
+  res = fetch_movement_sample(&(sens->s1),vec);
+  if(res < 0) return res;
+  res = fetch_movement_sample(&(sens->s2),&vec[6]);
+  return res;
+}
+
+static void destroy_acceleration_plugin(accel_sensors* sens) {
+  close(sens->s1.fd);
+  close(sens->s2.fd);
+  free(sens);
+}
+
+plugin_t* get_acceleration_plugin() {
+  plugin_t* res = malloc(sizeof(plugin_t));
+  accel_sensors* fds = malloc(sizeof(accel_sensors));
+  open_accel_sensor(&(fds->s1),"/dev/input/event2");
+  open_accel_sensor(&(fds->s2),"/dev/input/event3");
+  res->name = "accelerator";
+  res->user_data = fds;
+  res->feature_vector_size = 12;
+  res->callback = (feature_getter_t)fetch_acceleration_sample;
+  res->destructor = (plugin_destructor_t)destroy_acceleration_plugin;
+  return res;
+}

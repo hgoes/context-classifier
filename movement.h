@@ -3,6 +3,7 @@
 
 #include "config.h"
 #include "performance.h"
+#include "plugin.h"
 
 #include <stdio.h>
 #include <time.h>
@@ -25,8 +26,14 @@ typedef struct {
   int32_t last_x,last_y,last_z;
 } accel_sensor;
 
+typedef struct {
+  accel_sensor s1,s2;
+} accel_sensors;
+
 int open_accel_sensor(accel_sensor* sens,const char* dev);
 int fetch_entry(accel_sensor* sens, int32_t* x,int32_t* y,int32_t* z);
 int fetch_movement_sample(accel_sensor* sens,double* vec);
+
+plugin_t* get_acceleration_plugin();
 
 #endif

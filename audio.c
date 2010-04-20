@@ -119,3 +119,20 @@ void destroy_audio_system(audio_system* sys) {
   fftw_destroy_plan(sys->plan);
 #endif
 }
+
+static void audio_plugin_destructor(audio_system* sys) {
+  destroy_audio_system(sys);
+  free(sys);
+}
+
+plugin_t* get_audio_plugin() {
+  audio_system* sys = malloc(sizeof(audio_system));
+  plugin_t* res = malloc(sizeof(plugin_t));
+  init_audio_system(sys);
+  res->name = "audio";
+  res->user_data = sys;
+  res->feature_vector_size = 6;
+  res->callback = (feature_getter_t)fetch_audio_sample;
+  res->destructor = (plugin_destructor_t)audio_plugin_destructor;
+  return res;
+}

@@ -8,6 +8,7 @@
 #include "ini_parser.h"
 #include "movement.h"
 #include "performance.h"
+#include "broadcaster.h"
 #include <stdio.h>
 #include <unistd.h>
 #ifdef CPU_RUNTIME
@@ -16,5 +17,6 @@
 #include "classifier_set.h"
 #include <signal.h>
 #include <sys/wait.h>
+#include <sys/time.h>
 
 #endif

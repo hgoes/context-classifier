@@ -1,6 +1,6 @@
 #include "classifier.h"
 
-void audio_thread(int* running,rule_list_t* rules) {
+/*void audio_thread(int* running,rule_list_t* rules,int sock) {
   audio_system sys;
   int res = init_audio_system(&sys);
   if(res < 0) {
@@ -23,7 +23,7 @@ void audio_thread(int* running,rule_list_t* rules) {
   destroy_audio_system(&sys);
 }
 
-void movement_thread(int* running,rule_list_t* rules) {
+void movement_thread(int* running,rule_list_t* rules,int sock) {
   accel_sensor fd1,fd2;
   open_accel_sensor(&fd1,"/dev/input/event2");
   open_accel_sensor(&fd2,"/dev/input/event3");
@@ -36,15 +36,15 @@ void movement_thread(int* running,rule_list_t* rules) {
     if(res != 0) {
       //fprintf(stderr,"Error reading movement data: %d\n",res);
     } else {
-      fprintf(stdout,"Movement vec: [%f %f %f %f %f %f %f %f %f %f %f %f %f]\n",
-              vec[0],vec[1],vec[2],vec[3],vec[4],vec[5],vec[6],vec[7],vec[8],vec[9],vec[10],vec[11],vec[12]);
+      //fprintf(stdout,"Movement vec: [%f %f %f %f %f %f %f %f %f %f %f %f %f]\n",
+      //        vec[0],vec[1],vec[2],vec[3],vec[4],vec[5],vec[6],vec[7],vec[8],vec[9],vec[10],vec[11],vec[12]);
       MEASURED("movement evaluation",{
 	  rules = evaluate_classifier(rules,vec,&res,&vec[12]);
 	});
       fprintf(stdout,"Movement class: %d\n",res);
     }
   }
-}
+  }*/
 
 int main(int argc,char** argv) {
   /*
@@ -80,18 +80,48 @@ int main(int argc,char** argv) {
     fprintf(stderr,"Failed to parse audio classifiers\n");
     return -1;
   }
-  audio_id = fork();
-  if(audio_id == 0) {
-    audio_thread(&running,cls_aud.rules);
-    return 0;
-  } else {
-    movement_id = fork();
-    if(movement_id == 0) {
-      movement_thread(&running,cls_acc.rules);
-      printf("Movement thread finished!\n");
-      return 0;
+  int sock = create_broadcast_socket();
+  void callback_audio(int class,double raw,void* user_data) {
+    struct timeval tv;
+    gettimeofday(&tv,NULL);
+    char* class_name;
+    int tp = *((int*)user_data);
+    switch(tp) {
+    case 0: //audio
+      switch(class) {
+      case -1:
+        class_name = "NON";
+        break;
+      case 0:
+        class_name = "ABC";
+        break;
+      default:
+        class_name = "BLU";
+        break;
+      }
+      break;
+    case 1: //accel
+      switch(class) {
+      case -1:
+        class_name = "ERR";
+        break;
+      case 0:
+        class_name = "DEF";
+        break;
+      default:
+        class_name = "GRE";
+        break;
+      }
+      break;
     }
+    send_broadcast_packet(sock,tv.tv_sec,tv.tv_usec,class_name,(int)(raw*255.0),9);
   }
+  int aud_tp = 0, accel_tp = 1;
+  
+  
+  audio_id = dispatch_plugin(get_audio_plugin(),cls_aud.rules,callback_audio,&aud_tp,&running);
+  movement_id = dispatch_plugin(get_acceleration_plugin(),cls_acc.rules,callback_audio,&accel_tp,&running);
+
   waitpid(audio_id,NULL,0);
   waitpid(movement_id,NULL,0);
 #ifdef CPU_RUNTIME
