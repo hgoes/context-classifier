@@ -1,0 +1,14 @@
+How to compile the context-classifier
+-------------------------------------
+
+You need:
+  - An open-moko phone running linux
+  - An ARM-cross-compiler (arm-linux-gnueabi-gcc or similar)
+  - The jansson json library (http://www.digip.org/jansson/) installed on the phone
+  - The ALSA library installed on the phone (comes with most linux distros anyway)
+  - If you want to use floating-point FFT instead of integer-FFT (not a good idea on the open-moko) you need libfftw installed on the phone
+
+1. Edit CMakeLists.txt and set the CMAKE_C_COMPILER to the name of the executable of your cross compiler
+2. Run ./gen.sh to compile the code
+3. Put your classifiers in a directory named "classifiers" on the phone.
+4. Put the executable build/classifier onto the phone and execute it.
