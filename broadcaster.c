@@ -14,7 +14,7 @@ int create_broadcast_socket() {
   memset(&bind_addr,0,sizeof(bind_addr));
   bind_addr.sin_family = AF_INET;
   bind_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-  bind_addr.sin_port = htons(PORT);
+  bind_addr.sin_port = htons(9999);
   
   if(bind(sock,(struct sockaddr*)&bind_addr,sizeof(bind_addr)) < 0) {
     return -1;
