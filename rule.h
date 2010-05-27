@@ -18,29 +18,36 @@
 #include "config.h"
 
 /**
- * A single rule.
+ * A single rule \f$R\f$.
  */
 typedef struct {
   ///Dimension of the rule (\f$n\f$)
   int size;
-  ///A result vector of size \f$n+1\f$
+  ///A result vector \f$r(R)\f$ of size \f$n+1\f$
   double* rvec;
-  ///A covariance matrix of size \f$n\cdot n\f$
+  ///A covariance matrix \f$\Sigma(R)\f$ of size \f$n\cdot n\f$
   double* covar;
-  ///A mean vector of size \f$n\f$
+  ///A mean vector \f$m(R)\f$ of size \f$n\f$
   double* vmean;
 } rule_t;
 
-struct rule_list_t_ {
+/**
+ * A list of rules \f$R_1,R_2,\dots,R_m\f$.
+ */
+typedef struct rule_list_t_ {
+  ///The number of rules \f$m\f$
   int nrules;
+  ///The array of rules of size \f$m\f$
   rule_t* rules;
+  ///The number of fuzzy membership functions
   int nmembers;
+  ///The averages of the fuzzy membership functions
   double* avgs;
+  ///The resulting classes encoded as strings of the membership functions
   char** ress;
+  ///The next rule list.
   struct rule_list_t_* next;
-};
-
-typedef struct rule_list_t_ rule_list_t;
+} rule_list_t;
 
 /**
  * Initalize a rule. Allocates enough memory for the rule.
