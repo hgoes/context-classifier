@@ -1,5 +1,5 @@
-#ifndef __MOVEMENT_H__
-#define __MOVEMENT_H__
+#ifndef __ACCELERATION_H__
+#define __ACCELERATION_H__
 
 #include "config.h"
 #include "performance.h"
@@ -32,7 +32,7 @@ typedef struct {
 
 int open_accel_sensor(accel_sensor* sens,const char* dev);
 int fetch_entry(accel_sensor* sens, int32_t* x,int32_t* y,int32_t* z);
-int fetch_movement_sample(accel_sensor* sens,double* vec);
+int fetch_accel_sample(accel_sensor* sens,double* vec);
 
 plugin_t* get_acceleration_plugin();
 

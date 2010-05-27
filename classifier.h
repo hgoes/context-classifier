@@ -6,7 +6,7 @@
 #include "audio.h"
 #include "rule.h"
 #include "ini_parser.h"
-#include "movement.h"
+#include "acceleration.h"
 #include "performance.h"
 #include "broadcaster.h"
 #include <stdio.h>

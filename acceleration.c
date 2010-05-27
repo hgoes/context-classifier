@@ -1,4 +1,4 @@
-#include "movement.h"
+#include "acceleration.h"
 
 int open_accel_sensor(accel_sensor* sens,const char* dev) {
   sens->fd = open(dev,O_RDONLY);
@@ -32,19 +32,19 @@ static int fetch_event(int fd,struct input_event* ev) {
   }
 }
 
-static void movement_statistics(const int32_t* movement_buf,double* vec) {
+static void accel_statistics(const int32_t* movement_buf,double* vec) {
   int i;
   double meanx = 0,meany = 0,meanz = 0;
-  for(i=0;i<MOVEMENT_SAMPLE_COUNT;i++) {
+  for(i=0;i<ACCEL_SAMPLE_COUNT;i++) {
     meanx += (double)movement_buf[i*3];
     meany += (double)movement_buf[i*3+1];
     meanz += (double)movement_buf[i*3+2];
   }
-  meanx /= MOVEMENT_SAMPLE_COUNT;
-  meany /= MOVEMENT_SAMPLE_COUNT;
-  meanz /= MOVEMENT_SAMPLE_COUNT;
+  meanx /= ACCEL_SAMPLE_COUNT;
+  meany /= ACCEL_SAMPLE_COUNT;
+  meanz /= ACCEL_SAMPLE_COUNT;
   double varx = 0,vary = 0,varz = 0;
-  for(i=0;i<MOVEMENT_SAMPLE_COUNT;i++) {
+  for(i=0;i<ACCEL_SAMPLE_COUNT;i++) {
     double t = ((double)movement_buf[i*3]) - meanx;
     varx += t*t;
     t = ((double)movement_buf[i*3+1]) - meany;
@@ -52,9 +52,9 @@ static void movement_statistics(const int32_t* movement_buf,double* vec) {
     t = ((double)movement_buf[i*3+2]) - meanz;
     varz += t*t;
   }
-  varx /= MOVEMENT_SAMPLE_COUNT;
-  vary /= MOVEMENT_SAMPLE_COUNT;
-  varz /= MOVEMENT_SAMPLE_COUNT;
+  varx /= ACCEL_SAMPLE_COUNT;
+  vary /= ACCEL_SAMPLE_COUNT;
+  varz /= ACCEL_SAMPLE_COUNT;
   vec[0] = varx;
   vec[1] = vary;
   vec[2] = varz;
@@ -63,18 +63,18 @@ static void movement_statistics(const int32_t* movement_buf,double* vec) {
   vec[5] = meanz;
 }
 
-int fetch_movement_sample(accel_sensor* sens,double* vec) {
-  int32_t movement_buf[MOVEMENT_SAMPLE_COUNT*3];
+int fetch_accel_sample(accel_sensor* sens,double* vec) {
+  int32_t movement_buf[ACCEL_SAMPLE_COUNT*3];
   int i;
   MEASURED("movement fetching",{
-      for(i=0;i<MOVEMENT_SAMPLE_COUNT;i++) {
+      for(i=0;i<ACCEL_SAMPLE_COUNT;i++) {
 	int res = fetch_entry(sens,&movement_buf[i*3],&movement_buf[i*3+1],&movement_buf[i*3+2]);
         //printf("Raw: [%d %d %d]\n",movement_buf[i*3],movement_buf[i*3+1],movement_buf[i*3+2]);
 	if(res < 0) return res;
       }
     });
   MEASURED("movement preprocessing",{
-      movement_statistics(movement_buf,vec);
+      accel_statistics(movement_buf,vec);
     });
   return 0;
 }
@@ -107,9 +107,9 @@ int fetch_entry(accel_sensor* sens, int32_t* x,int32_t* y,int32_t* z) {
 
 int fetch_acceleration_sample(accel_sensors* sens,double* vec) {
   int res;
-  res = fetch_movement_sample(&(sens->s1),vec);
+  res = fetch_accel_sample(&(sens->s1),vec);
   if(res < 0) return res;
-  res = fetch_movement_sample(&(sens->s2),&vec[6]);
+  res = fetch_accel_sample(&(sens->s2),&vec[6]);
   return res;
 }
 
