@@ -1,8 +1,9 @@
 /**
  * @file
+ * @addtogroup engine Rule-Engine
  * Implements the rule engine.
  * A rule \f$R\f$ of length \f$n\f$ consists of a result vector (\f$r(R)\f$) of length \f$n+1\f$, a covariance matrix (\f$\Sigma(R)\f$) of size \f$n\cdot n\f$ and a mean vector (\f$m(R)\f$) of length \f$n\f$.
- * 
+ * @{
  */
 #ifndef __RULE_H__
 #define __RULE_H__
@@ -16,10 +17,17 @@
 #include "ini_parser.h"
 #include "config.h"
 
+/**
+ * A single rule.
+ */
 typedef struct {
+  ///Dimension of the rule (\f$n\f$)
   int size;
+  ///A result vector of size \f$n+1\f$
   double* rvec;
+  ///A covariance matrix of size \f$n\cdot n\f$
   double* covar;
+  ///A mean vector of size \f$n\f$
   double* vmean;
 } rule_t;
 
@@ -28,7 +36,7 @@ struct rule_list_t_ {
   rule_t* rules;
   int nmembers;
   double* avgs;
-  int* ress;
+  char** ress;
   struct rule_list_t_* next;
 };
 
@@ -79,7 +87,10 @@ double evaluate_ruleset(int nrules,const rule_t* rules,const double* vec);
  */
 int parse_ruleset(const char* fn,int* nrules,rule_t** rules);
 
-rule_list_t* evaluate_classifier(rule_list_t* rl,const double* vec,int* res_clas,double* res_val);
+rule_list_t* evaluate_classifier(rule_list_t* rl,const double* vec,char** res_clas,double* res_val);
 
-rule_list_t* rule_list_add(rule_list_t* rl,int nrules,rule_t* rules,int nmembers,double* avgs,int* ress);
+rule_list_t* rule_list_add(rule_list_t* rl,int nrules,rule_t* rules,int nmembers,double* avgs,char** ress);
 #endif
+/**
+ * @}
+ */

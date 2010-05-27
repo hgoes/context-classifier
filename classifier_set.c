@@ -11,7 +11,7 @@ void print_classifier_set(classifier_set_t* cls) {
     }
     printf("[");
     for(i=0;i<cur->nmembers;i++) {
-      printf("%f -> %d  ",cur->avgs[i],cur->ress[i]);
+      printf("%f -> %s  ",cur->avgs[i],cur->ress[i]);
     }
     printf("]\n");
     cur = cur->next;
@@ -140,7 +140,7 @@ int parse_classifier_set(const char* fp,classifier_set_t* cls) {
     }
     last_list->nmembers = json_array_size(mapping);
     last_list->avgs = calloc(sizeof(double),json_array_size(mapping));
-    last_list->ress = calloc(sizeof(int),json_array_size(mapping));
+    last_list->ress = calloc(sizeof(char*),json_array_size(mapping));
     for(j=0;j<json_array_size(mapping);j++) {
       json_t* entr = json_array_get(mapping,j);
       if(!json_is_object(entr)) {
@@ -154,11 +154,12 @@ int parse_classifier_set(const char* fp,classifier_set_t* cls) {
       }
       last_list->avgs[j] = json_real_value(value);
       json_t* class = json_object_get(entr,"class");
-      if(!class || !json_is_integer(class)) {
-        fprintf(stderr,"\"class\" field not existent or not an integer.\n");
+      if(!class || !json_is_string(class)) {
+        fprintf(stderr,"\"class\" field not existent or not a string.\n");
+        //TODO: This leaks memory
         goto out_free_rules;
       }
-      last_list->ress[j] = json_integer_value(class);
+      last_list->ress[j] = strdup(json_string_value(class));
     }
   }
 

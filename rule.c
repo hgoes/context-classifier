@@ -32,7 +32,7 @@ void print_rule(rule_t* rule) {
 }
 
 double evaluate_rule(const rule_t* rule,const double* vec) {
-  return rule->rvec[rule->size] + mult_vec_vec(rule->size-1,rule->rvec,vec);
+  return rule->rvec[rule->size] + mult_vec_vec(rule->size,rule->rvec,vec);
 }
 
 double weigh_rule(const rule_t* rule,const double* vec) {
@@ -153,9 +153,9 @@ int parse_ruleset(const char* fn,int* nrules,rule_t** rules) {
   return res;
 }
 
-rule_list_t* evaluate_classifier_rec(rule_list_t* head,rule_list_t* last,rule_list_t* cur,const double* vec,int* res_clas,double* res_val) {
+rule_list_t* evaluate_classifier_rec(rule_list_t* head,rule_list_t* last,rule_list_t* cur,const double* vec,char** res_clas,double* res_val) {
   if(cur == NULL) {
-    *res_clas = -1;
+    *res_clas = "ERR";
     return head;
   } else {
     double eval = evaluate_ruleset(cur->nrules,cur->rules,vec);
@@ -178,11 +178,11 @@ rule_list_t* evaluate_classifier_rec(rule_list_t* head,rule_list_t* last,rule_li
   }
 }
 
-rule_list_t* evaluate_classifier(rule_list_t* rl,const double* vec,int* res_clas,double* res_val) {
+rule_list_t* evaluate_classifier(rule_list_t* rl,const double* vec,char** res_clas,double* res_val) {
   return evaluate_classifier_rec(rl,NULL,rl,vec,res_clas,res_val);
 }
 
-rule_list_t* rule_list_add(rule_list_t* rl,int nrules,rule_t* rules,int nmembers,double* avgs,int* ress) {
+rule_list_t* rule_list_add(rule_list_t* rl,int nrules,rule_t* rules,int nmembers,double* avgs,char** ress) {
   rule_list_t* res = malloc(sizeof(rule_list_t));
   res->nrules = nrules;
   res->rules = rules;

@@ -122,8 +122,8 @@ static void destroy_acceleration_plugin(accel_sensors* sens) {
 plugin_t* get_acceleration_plugin() {
   plugin_t* res = malloc(sizeof(plugin_t));
   accel_sensors* fds = malloc(sizeof(accel_sensors));
-  open_accel_sensor(&(fds->s1),"/dev/input/event2");
-  open_accel_sensor(&(fds->s2),"/dev/input/event3");
+  open_accel_sensor(&(fds->s1),"/dev/input/event3");
+  open_accel_sensor(&(fds->s2),"/dev/input/event4");
   res->name = "accelerator";
   res->user_data = fds;
   res->feature_vector_size = 12;

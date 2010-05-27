@@ -8,7 +8,7 @@ void free_plugin(plugin_t* plugin) {
 pid_t dispatch_plugin(const plugin_t* plugin,rule_list_t* rules,classification_cb_t cb,void* cb_data,int* running) {
   pid_t res = fork();
   if(res == 0) {
-    int class;
+    char* class;
     double* vec = calloc(plugin->feature_vector_size+1,sizeof(double));
     char* eval_str;
     double raw;
@@ -19,6 +19,16 @@ pid_t dispatch_plugin(const plugin_t* plugin,rule_list_t* rules,classification_c
         MEASURED(eval_str,
                  { rules = evaluate_classifier(rules,vec,&class,&raw); });
         vec[plugin->feature_vector_size] = raw;
+        printf("[");
+        /*int i;
+        for(i = 0; i<=plugin->feature_vector_size; i++) {
+          printf("%f",vec[i]);
+          if(i!=plugin->feature_vector_size) {
+            printf(",");
+          }
+        }
+        printf("] -> %s (%f)\n",class,raw);*/
+        printf("%s (%f)\n",class,raw);
         cb(class,raw,cb_data);
       }
     }
