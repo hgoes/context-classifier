@@ -1,9 +1,10 @@
 /**
  * @file
+ * @addtogroup sensors Sensor-Implementations
  * The audio subsystem. Responsible for extracting audio feature
  * vectors from the hardware.
+ * @{
  */
-
 #ifndef __AUDIO_H__
 #define __AUDIO_H__
 
@@ -75,3 +76,6 @@ typedef fftw_complex complex_type;
 plugin_t* get_audio_plugin();
 
 #endif
+/**
+ * @}
+ */

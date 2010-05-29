@@ -1,6 +1,8 @@
 /**
  * @file
+ * @addtogroup utils Utilities
  * Defines simple, unoptimized matrix/vector operations.
+ * @{
  */
 #ifndef __VEC_H__
 #define __VEC_H__
@@ -33,3 +35,6 @@ void mult_mat_vec(int n,int m,const double* x,const double* vec,double* res);
 void vec_subtract(int n,const double* v1,const double* v2,double* to);
 
 #endif
+/**
+ * @}
+ */
