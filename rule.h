@@ -14,7 +14,6 @@
 #include <stdio.h>
 
 #include "vec.h"
-#include "ini_parser.h"
 #include "config.h"
 
 /**

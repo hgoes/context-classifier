@@ -16,7 +16,7 @@ else()
   set(FFT_LIB fftw3)
 endif()
 
-add_executable(classifier classifier audio vec rule ini_parser acceleration classifier_set broadcaster plugin ${FFT_SOURCES})
+add_executable(classifier classifier audio vec rule acceleration classifier_set broadcaster plugin ${FFT_SOURCES})
 
 target_link_libraries(classifier asound jansson)
 if(FFT_LIB)
