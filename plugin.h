@@ -15,6 +15,7 @@
 
 #include "rule.h"
 #include "performance.h"
+#include "scheduling.h"
 
 /**
  * A callback type to extract a feature vector.
