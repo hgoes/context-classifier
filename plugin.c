@@ -24,7 +24,7 @@ pid_t dispatch_plugin(const plugin_t* plugin,rule_list_t* rules,classification_c
           MEASURED(eval_str,
                    { rules = evaluate_classifier(rules,vec,&class,&raw); });
           vec[plugin->feature_vector_size] = raw;
-        
+          scheduler_add_context(&sched,class);
           /*printf("[");
             int i;
             for(i = 0; i<=plugin->feature_vector_size; i++) {
