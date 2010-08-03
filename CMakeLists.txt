@@ -3,6 +3,7 @@ project(context-classifier)
 set(INT_FFT true)
 #set(INT_FFT false)
 set(AUDIO_FORMAT "S16")
+set(SCHEDULING true)
 
 if(INT_FFT AND ${AUDIO_FORMAT} STREQUAL "DOUBLE")
   message(FATAL_ERROR "Integer FFT and double audio format not supported")
@@ -16,6 +17,10 @@ else()
   set(FFT_LIB fftw3)
 endif()
 
+if(SCHEDULING)
+  set(SCHEDULING_DEFS "-DSCHEDULING")
+endif()
+
 add_executable(classifier classifier audio vec rule acceleration classifier_set broadcaster plugin scheduling ${FFT_SOURCES})
 
 target_link_libraries(classifier asound jansson)
@@ -23,7 +28,7 @@ if(FFT_LIB)
   target_link_libraries(classifier ${FFT_LIB})
 endif()
 
-set(CMAKE_C_FLAGS "-g -Wall -DNATIVE_AUDIO_FORMAT_${AUDIO_FORMAT}")
+set(CMAKE_C_FLAGS "-g -Wall -DNATIVE_AUDIO_FORMAT_${AUDIO_FORMAT} ${SCHEDULING_DEFS}")
 
 if(INT_FFT)
   if(${AUDIO_FORMAT} STREQUAL "S16")
