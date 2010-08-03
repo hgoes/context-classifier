@@ -8,8 +8,6 @@ int open_accel_sensor(accel_sensor* sens,const char* dev) {
   return 0;
 }
 
-
-
 static int read_all(int fd, char *buf, int count) {
   int n_read = 0;
   while (n_read != count) {
@@ -79,6 +77,14 @@ int fetch_accel_sample(accel_sensor* sens,double* vec) {
   return 0;
 }
 
+void skip_accel_sample(accel_sensor* sens) {
+  int32_t tmp;
+  int i;
+  for(i=0;i<ACCEL_SAMPLE_COUNT;i++) {
+    fetch_entry(sens,&tmp,&tmp,&tmp);
+  }
+}
+
 int fetch_entry(accel_sensor* sens, int32_t* x,int32_t* y,int32_t* z) {
   struct input_event ev;
   do {
@@ -113,6 +119,11 @@ int fetch_acceleration_sample(accel_sensors* sens,double* vec) {
   return res;
 }
 
+void skip_acceleration_sample(accel_sensors* sens) {
+  skip_accel_sample(&(sens->s1));
+  skip_accel_sample(&(sens->s2));
+}
+
 static void destroy_acceleration_plugin(accel_sensors* sens) {
   close(sens->s1.fd);
   close(sens->s2.fd);
@@ -129,5 +140,6 @@ plugin_t* get_acceleration_plugin() {
   res->feature_vector_size = 12;
   res->callback = (feature_getter_t)fetch_acceleration_sample;
   res->destructor = (plugin_destructor_t)destroy_acceleration_plugin;
+  res->skipper = (feature_skipper_t)skip_acceleration_sample;
   return res;
 }
