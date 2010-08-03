@@ -18,27 +18,21 @@ pid_t dispatch_plugin(const plugin_t* plugin,rule_list_t* rules,classification_c
     asprintf(&eval_str,"%s evaluation",plugin->name);
     vec[plugin->feature_vector_size] = 0.0;
     while(*running) {
-      if(plugin->callback(plugin->user_data,vec) == 0) {
-        if(idle_counter >= scheduler_get_rate(&sched)) {
+      if(idle_counter >= scheduler_get_rate(&sched) || idle_counter >= 20) {
+        if(plugin->callback(plugin->user_data,vec) == 0) {
           idle_counter = 0;
           MEASURED(eval_str,
                    { rules = evaluate_classifier(rules,vec,&class,&raw); });
           vec[plugin->feature_vector_size] = raw;
           scheduler_add_context(&sched,class);
-          /*printf("[");
-            int i;
-            for(i = 0; i<=plugin->feature_vector_size; i++) {
-            printf("%f",vec[i]);
-            if(i!=plugin->feature_vector_size) {
-            printf(",");
-            }
-            }
-            printf("] -> %s (%f)\n",class,raw);*/
           printf("%s (%f)\n",class,raw);
           cb(class,raw,cb_data);
         } else {
           idle_counter++;
         }
+      } else {
+        plugin->skipper(plugin->user_data);
+        idle_counter++;
       }
     }
     free(vec);

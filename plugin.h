@@ -30,6 +30,8 @@ typedef void (*classification_cb_t)(char* class,double raw,void* user_data);
 
 typedef void (*plugin_destructor_t)(void* user_data);
 
+typedef void (*feature_skipper_t)(void* user_data);
+
 /**
  * A plugin handler. Holds static information about the plugin as well as plugin-specific state information.
  */
@@ -44,6 +46,8 @@ typedef struct {
   feature_getter_t callback;
   ///A function to clean up the plugin-specific state information
   plugin_destructor_t destructor;
+  ///A function to skip a feature vector
+  feature_skipper_t skipper;
 } plugin_t;
 
 /**
