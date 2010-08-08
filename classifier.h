@@ -6,6 +6,7 @@
 #include "audio.h"
 #include "rule.h"
 #include "acceleration.h"
+#include "acceleration-replayer.h"
 #include "performance.h"
 #include "broadcaster.h"
 #include <stdio.h>
