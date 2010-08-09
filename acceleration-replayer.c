@@ -8,13 +8,13 @@ static int read_acceleration_package(char** str,double* vec,struct timeval* tp) 
   int i,j;
   int fac;
   for(i=0;i<8;i++) {
-    for(j=0;j<6;j+=3) {
-      int res = sscanf(str[0],"%ld.%9[0123456789] %s %*s %lf %lf %lf",&ts_secs,ts_fracs,context,
-                       &data[i][j],&data[i][j+1],&data[i][j+2]);
+    for(j=0;j<2;j++) {
+      int res = sscanf(str[i*2+j],"%ld.%9[0123456789] %s %*s %lf %lf %lf",&ts_secs,ts_fracs,context,
+                       &data[i][j*3],&data[i][j*3+1],&data[i][j*3+2]);
       if(res != 6) {
         context[0] = '\0';
-        sscanf(str[0],"%ld.%9[0123456789] %*s %lf %lf %lf",&ts_secs,ts_fracs,
-               &data[i][j],&data[i][j+1],&data[i][j+2]);
+        sscanf(str[i*2+j],"%ld.%9[0123456789] %*s %lf %lf %lf",&ts_secs,ts_fracs,
+               &data[i][j],&data[i][j*3+1],&data[i][j*3+2]);
       }
     }
   }
