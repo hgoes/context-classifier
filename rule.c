@@ -80,6 +80,7 @@ typedef struct {
 rule_list_t* evaluate_classifier_rec(rule_list_t* head,rule_list_t* last,rule_list_t* cur,const double* vec,char** res_clas,double* res_val) {
   if(cur == NULL) {
     *res_clas = "ERR";
+    *res_val = 0.0;
     return head;
   } else {
     double eval = evaluate_ruleset(cur->nrules,cur->rules,vec);
@@ -88,14 +89,12 @@ rule_list_t* evaluate_classifier_rec(rule_list_t* head,rule_list_t* last,rule_li
       if(fabs(cur->avgs[i] - eval) < FUZZY_VARIANCE) {
 	*res_clas = cur->ress[i];
 	*res_val  = eval;
-	if(last == NULL) {
-	  //cur is the first entry
-	  return head;
-	} else {
-	  last->next = cur->next;
+	if(last != NULL) {
+	  //cur is not the first entry
+          last->next = cur->next;
 	  cur->next = head;
-	  return cur;
 	}
+        return cur;
       }
     }
     return evaluate_classifier_rec(head,cur,cur->next,vec,res_clas,res_val);
