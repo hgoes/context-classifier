@@ -21,7 +21,7 @@ if(SCHEDULING)
   set(SCHEDULING_DEFS "-DSCHEDULING")
 endif()
 
-add_executable(classifier classifier audio vec rule acceleration classifier_set broadcaster plugin scheduling replayer acceleration-replayer ${FFT_SOURCES})
+add_executable(classifier classifier audio vec rule acceleration classifier_set broadcaster plugin scheduling replayer acceleration-replayer battery ${FFT_SOURCES})
 
 target_link_libraries(classifier asound jansson)
 if(FFT_LIB)
