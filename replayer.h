@@ -8,7 +8,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-typedef int (*extractor_t)(char** str,double* vec,struct timeval* tp);
+typedef int (*extractor_t)(char** str,double* vec,struct timeval* tp,char** ground_truth);
 
 typedef struct {
   FILE* file_handle;

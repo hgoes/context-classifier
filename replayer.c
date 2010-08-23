@@ -1,6 +1,6 @@
 #include "replayer.h"
 
-static int fetch_replayer_sample(replayer_t* replayer,double* arr) {
+static int fetch_replayer_sample(replayer_t* replayer,double* arr,char** ground_truth) {
   char* str[replayer->line_size];
   int i;
   size_t len;
@@ -14,7 +14,7 @@ static int fetch_replayer_sample(replayer_t* replayer,double* arr) {
     }
   }
   struct timeval tp,now;
-  int res = replayer->extractor(str,arr,&tp);
+  int res = replayer->extractor(str,arr,&tp,ground_truth);
   for(i=0;i<replayer->line_size;i++) {
     free(str[i]);
   }

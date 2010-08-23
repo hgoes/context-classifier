@@ -23,11 +23,12 @@
  * @see plugin_t
  * @param user_data The plugin-specific state information
  * @param result An array large enough to hold the resulting feature vector
+ * @param ground_truth A pointer in which to store the expected classification result (in case of sensor data playback)
  * @return 0 if the vector could be fetched <0 otherwise
  */
-typedef int (*feature_getter_t)(void* user_data,double* result);
+typedef int (*feature_getter_t)(void* user_data,double* result,char** ground_truth);
 
-typedef void (*classification_cb_t)(char* class,double raw,void* user_data);
+typedef void (*classification_cb_t)(char* class,double raw,char* ground_truth,void* user_data);
 
 typedef void (*plugin_destructor_t)(void* user_data);
 

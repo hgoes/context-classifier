@@ -1,10 +1,10 @@
 #include "acceleration-replayer.h"
 
-static int read_acceleration_package(char** str,double* vec,struct timeval* tp) {
+static int read_acceleration_package(char** str,double* vec,struct timeval* tp,char** ground_truth) {
   double data[8][6];
   long int ts_secs,ts_usecs = 0;
   char ts_fracs[10];
-  char context[20];
+  static char context[20]; //Sorry, sorry, sorry, It's just so easy...
   int i,j;
   int fac;
   for(i=0;i<8;i++) {
@@ -61,6 +61,7 @@ static int read_acceleration_package(char** str,double* vec,struct timeval* tp) 
 
   tp->tv_sec = ts_secs;
   tp->tv_usec = ts_usecs;
+  *ground_truth = context;
   return 0;
 }
 

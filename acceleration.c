@@ -111,11 +111,12 @@ int fetch_entry(accel_sensor* sens, int32_t* x,int32_t* y,int32_t* z) {
   return 0;
 }
 
-int fetch_acceleration_sample(accel_sensors* sens,double* vec) {
+int fetch_acceleration_sample(accel_sensors* sens,double* vec,char** ground_truth) {
   int res;
   res = fetch_accel_sample(&(sens->s1),vec);
   if(res < 0) return res;
   res = fetch_accel_sample(&(sens->s2),&vec[6]);
+  *ground_truth = NULL;
   return res;
 }
 

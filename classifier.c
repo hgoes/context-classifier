@@ -36,11 +36,16 @@ int main(int argc,char** argv) {
     return -1;
     }*/
   int sock = create_broadcast_socket();
-  void callback(char* class,double raw,void* user_data) {
+  void callback(char* class,double raw,char* ground_truth,void* user_data) {
     struct timeval tv;
     int battery_level = read_battery_level();
     gettimeofday(&tv,NULL);
-    printf("%ld\t%d\t%s\t%f\t%d\n",tv.tv_sec,tv.tv_usec,class,raw,battery_level);
+    printf("%ld\t%d\t%s\t%f\t%d",tv.tv_sec,tv.tv_usec,class,raw,battery_level);
+    if(ground_truth == NULL) {
+      printf("\n");
+    } else {
+      printf("\t%s\n",ground_truth);
+    }
     send_broadcast_packet(sock,tv.tv_sec,tv.tv_usec,class,(int)(raw*255.0),9);
   }
 

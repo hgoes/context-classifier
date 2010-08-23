@@ -12,6 +12,7 @@ pid_t dispatch_plugin(const plugin_t* plugin,rule_list_t* rules,classification_c
     double* vec = calloc(plugin->feature_vector_size+1,sizeof(double));
     char* eval_str;
     double raw;
+    char* ground_truth;
 #ifdef SCHEDULING
     scheduler_t sched;
     int idle_counter = 0;
@@ -24,14 +25,14 @@ pid_t dispatch_plugin(const plugin_t* plugin,rule_list_t* rules,classification_c
       if(idle_counter >= scheduler_get_rate(&sched) || idle_counter >= 20) {
         idle_counter = 0;
 #endif
-        if(plugin->callback(plugin->user_data,vec) == 0) {
+        if(plugin->callback(plugin->user_data,vec,&ground_truth) == 0) {
           MEASURED(eval_str,
                    { rules = evaluate_classifier(rules,vec,&class,&raw); });
           vec[plugin->feature_vector_size] = raw;
 #ifdef SCHEDULING
           scheduler_add_context(&sched,class);
 #endif
-          cb(class,raw,cb_data);
+          cb(class,raw,ground_truth,cb_data);
         } else {
           fprintf(stderr,"WARNING: plugin %s failed to produce feature vector\n",plugin->name);
         }

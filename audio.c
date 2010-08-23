@@ -35,7 +35,7 @@ void calculate_statistics(complex_type* from,int sz,double* mean,double* var,dou
   *var = acc / sz;
 }
 
-int fetch_audio_sample(audio_system* sys,double* vec) {
+int fetch_audio_sample(audio_system* sys,double* vec,char** ground_truth) {
   int err;
 #ifdef INT_FFT
   if((err = snd_pcm_readi(sys->handle, sys->buf, AUDIO_SAMPLE_COUNT)) != AUDIO_SAMPLE_COUNT) {
@@ -64,6 +64,7 @@ int fetch_audio_sample(audio_system* sys,double* vec) {
       calculate_statistics(&(sys->tbuf[AUDIO_SAMPLE_COUNT/2+1]),AUDIO_SAMPLE_COUNT/2,&vec[3],&vec[4],&vec[5]);
       //calculate_statistics(sys->tbuf,AUDIO_SAMPLE_COUNT,&vec[0],&vec[1],&vec[2]);
     });
+  *ground_truth = NULL;
   return 0;
 }
 
