@@ -26,7 +26,7 @@ int main(int argc,char** argv) {
   }
 
   signal(SIGINT,exit_handler);
-  if(parse_classifier_set("classifiers/movement.json",&cls_acc) != 0) {
+  if(parse_classifier_set("classifiers/movement3.json",&cls_acc) != 0) {
     fprintf(stderr,"Failed to parse movement classifiers\n");
     return -1;
   }
@@ -36,23 +36,16 @@ int main(int argc,char** argv) {
     return -1;
     }*/
   int sock = create_broadcast_socket();
-  void callback_audio(char* class,double raw,void* user_data) {
+  void callback(char* class,double raw,void* user_data) {
     struct timeval tv;
+    int battery_level = read_battery_level();
     gettimeofday(&tv,NULL);
-    int tp = *((int*)user_data);
-    switch(tp) {
-    case 0: //audio
-      break;
-    case 1: //accel
-      break;
-    }
+    printf("%ld\t%d\t%s\t%f\t%d\n",tv.tv_sec,tv.tv_usec,class,raw,battery_level);
     send_broadcast_packet(sock,tv.tv_sec,tv.tv_usec,class,(int)(raw*255.0),9);
   }
-  int aud_tp = 0, accel_tp = 1;
-  
-  
+
   //audio_id = dispatch_plugin(get_audio_plugin(),cls_aud.rules,callback_audio,&aud_tp,&running);
-  movement_id = dispatch_plugin(get_acceleration_plugin(),cls_acc.rules,callback_audio,&accel_tp,&running);
+  movement_id = dispatch_plugin(get_acceleration_replayer_plugin("florian"),cls_acc.rules,callback,NULL,&running);
 
   //waitpid(audio_id,NULL,0);
   waitpid(movement_id,NULL,0);

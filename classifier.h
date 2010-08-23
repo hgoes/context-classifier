@@ -15,6 +15,7 @@
 #include <sys/times.h>
 #endif
 #include "classifier_set.h"
+#include "battery.h"
 #include <signal.h>
 #include <sys/wait.h>
 #include <sys/time.h>

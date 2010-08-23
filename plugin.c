@@ -31,7 +31,6 @@ pid_t dispatch_plugin(const plugin_t* plugin,rule_list_t* rules,classification_c
 #ifdef SCHEDULING
           scheduler_add_context(&sched,class);
 #endif
-          printf("%s (%f)\n",class,raw);
           cb(class,raw,cb_data);
         } else {
           fprintf(stderr,"WARNING: plugin %s failed to produce feature vector\n",plugin->name);
