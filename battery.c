@@ -1,7 +1,7 @@
 #include "battery.h"
 
 int read_battery_level() {
-  FILE* f = fopen("/sys/class/power_supply/BAT0/state","r");
+  FILE* f = fopen("/sys/class/power_supply/battery/capacity","r");
   if(f==NULL) {
     return -1;
   }
