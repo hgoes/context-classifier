@@ -26,7 +26,8 @@ int main(int argc,char** argv) {
   }
 
   signal(SIGINT,exit_handler);
-  if(parse_classifier_set("classifiers/movement3.json",&cls_acc) != 0) {
+  plugin_t* accel_plugin = get_acceleration_replayer_plugin("RandData500S");
+  if(parse_classifier_set("classifiers/movement.json",&cls_acc,accel_plugin) != 0) {
     fprintf(stderr,"Failed to parse movement classifiers\n");
     return -1;
   }
@@ -50,7 +51,7 @@ int main(int argc,char** argv) {
   }
 
   //audio_id = dispatch_plugin(get_audio_plugin(),cls_aud.rules,callback_audio,&aud_tp,&running);
-  movement_id = dispatch_plugin(get_acceleration_replayer_plugin("florian"),cls_acc.rules,callback,NULL,&running);
+  movement_id = dispatch_plugin(accel_plugin,cls_acc.rules,callback,NULL,&running,cls_acc.semantics);
 
   //waitpid(audio_id,NULL,0);
   waitpid(movement_id,NULL,0);

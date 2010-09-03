@@ -35,7 +35,7 @@ void calculate_statistics(complex_type* from,int sz,double* mean,double* var,dou
   *var = acc / sz;
 }
 
-int fetch_audio_sample(audio_system* sys,double* vec,char** ground_truth) {
+int fetch_audio_sample(audio_system* sys,double* vec,char** ground_truth,const int* semantics) {
   int err;
 #ifdef INT_FFT
   if((err = snd_pcm_readi(sys->handle, sys->buf, AUDIO_SAMPLE_COUNT)) != AUDIO_SAMPLE_COUNT) {
@@ -60,8 +60,8 @@ int fetch_audio_sample(audio_system* sys,double* vec,char** ground_truth) {
 #else
       fftw_execute(sys->plan);
 #endif
-      calculate_statistics(sys->tbuf,AUDIO_SAMPLE_COUNT/2,&vec[0],&vec[1],&vec[2]);
-      calculate_statistics(&(sys->tbuf[AUDIO_SAMPLE_COUNT/2+1]),AUDIO_SAMPLE_COUNT/2,&vec[3],&vec[4],&vec[5]);
+      calculate_statistics(sys->tbuf,AUDIO_SAMPLE_COUNT/2,&vec[semantics[1]],&vec[semantics[3]],&vec[semantics[5]]);
+      calculate_statistics(&(sys->tbuf[AUDIO_SAMPLE_COUNT/2+1]),AUDIO_SAMPLE_COUNT/2,&vec[semantics[2]],&vec[semantics[4]],&vec[semantics[6]]);
       //calculate_statistics(sys->tbuf,AUDIO_SAMPLE_COUNT,&vec[0],&vec[1],&vec[2]);
     });
   *ground_truth = NULL;
@@ -126,6 +126,16 @@ static void audio_plugin_destructor(audio_system* sys) {
   free(sys);
 }
 
+static int audio_semantics(const char* term) {
+  if(strcmp(term,"mean_1")==0) return 1;
+  if(strcmp(term,"mean_2")==0) return 2;
+  if(strcmp(term,"var_1")==0) return 3;
+  if(strcmp(term,"var_2")==0) return 4;
+  if(strcmp(term,"centr_1")==0) return 5;
+  if(strcmp(term,"centr_2")==0) return 6;
+  return -1;
+}
+
 plugin_t* get_audio_plugin() {
   audio_system* sys = malloc(sizeof(audio_system));
   plugin_t* res = malloc(sizeof(plugin_t));
@@ -135,5 +145,6 @@ plugin_t* get_audio_plugin() {
   res->feature_vector_size = 6;
   res->callback = (feature_getter_t)fetch_audio_sample;
   res->destructor = (plugin_destructor_t)audio_plugin_destructor;
+  res->semantic_mapper = audio_semantics;
   return res;
 }

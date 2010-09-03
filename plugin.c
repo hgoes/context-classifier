@@ -5,7 +5,7 @@ void free_plugin(plugin_t* plugin) {
   free(plugin);
 }
 
-pid_t dispatch_plugin(const plugin_t* plugin,rule_list_t* rules,classification_cb_t cb,void* cb_data,int* running) {
+pid_t dispatch_plugin(const plugin_t* plugin,rule_list_t* rules,classification_cb_t cb,void* cb_data,int* running,const int* semantics) {
   pid_t res = fork();
   if(res == 0) {
     char* class;
@@ -25,7 +25,7 @@ pid_t dispatch_plugin(const plugin_t* plugin,rule_list_t* rules,classification_c
       if(idle_counter >= scheduler_get_rate(&sched) || idle_counter >= 20) {
         idle_counter = 0;
 #endif
-        if(plugin->callback(plugin->user_data,vec,&ground_truth) == 0) {
+        if(plugin->callback(plugin->user_data,vec,&ground_truth,semantics) == 0) {
           MEASURED(eval_str,
                    { rules = evaluate_classifier(rules,vec,&class,&raw); });
           vec[plugin->feature_vector_size] = raw;

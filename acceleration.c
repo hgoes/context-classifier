@@ -30,7 +30,7 @@ static int fetch_event(int fd,struct input_event* ev) {
   }
 }
 
-static void accel_statistics(const int32_t* movement_buf,double* vec) {
+static void accel_statistics(int n,const int32_t* movement_buf,double* vec,const int* semantics) {
   int i;
   double meanx = 0,meany = 0,meanz = 0;
   for(i=0;i<ACCEL_SAMPLE_COUNT;i++) {
@@ -50,18 +50,28 @@ static void accel_statistics(const int32_t* movement_buf,double* vec) {
     t = ((double)movement_buf[i*3+2]) - meanz;
     varz += t*t;
   }
-  varx /= ACCEL_SAMPLE_COUNT;
-  vary /= ACCEL_SAMPLE_COUNT;
-  varz /= ACCEL_SAMPLE_COUNT;
-  vec[0] = varx;
-  vec[1] = vary;
-  vec[2] = varz;
-  vec[3] = meanx;
-  vec[4] = meany;
-  vec[5] = meanz;
+  varx /= ACCEL_SAMPLE_COUNT - 1;
+  vary /= ACCEL_SAMPLE_COUNT - 1;
+  varz /= ACCEL_SAMPLE_COUNT - 1;
+  
+  if(n==0) {
+    vec[semantics[1]] = meanx;
+    vec[semantics[2]] = meany;
+    vec[semantics[3]] = meanz;
+    vec[semantics[4]] = varx;
+    vec[semantics[5]] = vary;
+    vec[semantics[6]] = varz;
+  } else {
+    vec[semantics[7]] = meanx;
+    vec[semantics[8]] = meany;
+    vec[semantics[9]] = meanz;
+    vec[semantics[10]] = varx;
+    vec[semantics[11]] = vary;
+    vec[semantics[12]] = varz;
+  }
 }
 
-int fetch_accel_sample(accel_sensor* sens,double* vec) {
+int fetch_accel_sample(int n,accel_sensor* sens,double* vec,const int* semantics) {
   int32_t movement_buf[ACCEL_SAMPLE_COUNT*3];
   int i;
   MEASURED("movement fetching",{
@@ -72,7 +82,7 @@ int fetch_accel_sample(accel_sensor* sens,double* vec) {
       }
     });
   MEASURED("movement preprocessing",{
-      accel_statistics(movement_buf,vec);
+      accel_statistics(n,movement_buf,vec,semantics);
     });
   return 0;
 }
@@ -111,11 +121,11 @@ int fetch_entry(accel_sensor* sens, int32_t* x,int32_t* y,int32_t* z) {
   return 0;
 }
 
-int fetch_acceleration_sample(accel_sensors* sens,double* vec,char** ground_truth) {
+int fetch_acceleration_sample(accel_sensors* sens,double* vec,char** ground_truth,const int* semantics) {
   int res;
-  res = fetch_accel_sample(&(sens->s1),vec);
+  res = fetch_accel_sample(0,&(sens->s1),vec,semantics);
   if(res < 0) return res;
-  res = fetch_accel_sample(&(sens->s2),&vec[6]);
+  res = fetch_accel_sample(1,&(sens->s2),vec,semantics);
   *ground_truth = NULL;
   return res;
 }
@@ -131,6 +141,22 @@ static void destroy_acceleration_plugin(accel_sensors* sens) {
   free(sens);
 }
 
+static int acceleration_semantics(const char* term) {
+  if(strcmp(term,"mean_x1")==0) return 1;
+  if(strcmp(term,"mean_y1")==0) return 2;
+  if(strcmp(term,"mean_z1")==0) return 3;
+  if(strcmp(term,"var_x1")==0) return 4;
+  if(strcmp(term,"var_y1")==0) return 5;
+  if(strcmp(term,"var_z1")==0) return 6;
+  if(strcmp(term,"mean_x2")==0) return 7;
+  if(strcmp(term,"mean_y2")==0) return 8;
+  if(strcmp(term,"mean_z2")==0) return 9;
+  if(strcmp(term,"var_x2")==0) return 10;
+  if(strcmp(term,"var_y2")==0) return 11;
+  if(strcmp(term,"var_z2")==0) return 12;
+  return -1;
+}
+
 plugin_t* get_acceleration_plugin() {
   plugin_t* res = malloc(sizeof(plugin_t));
   accel_sensors* fds = malloc(sizeof(accel_sensors));
@@ -142,5 +168,6 @@ plugin_t* get_acceleration_plugin() {
   res->callback = (feature_getter_t)fetch_acceleration_sample;
   res->destructor = (plugin_destructor_t)destroy_acceleration_plugin;
   res->skipper = (feature_skipper_t)skip_acceleration_sample;
+  res->semantic_mapper = (semantics_mapper_t)acceleration_semantics;
   return res;
 }

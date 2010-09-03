@@ -60,7 +60,7 @@ void destroy_audio_system(audio_system* sys);
  * @param vec The target for the feature vector. Must be long enough to store it.
  * @return 0 if a vector was succesfully fetched, <0 otherwise
  */
-int fetch_audio_sample(audio_system* sys,double* vec,char** ground_truth);
+int fetch_audio_sample(audio_system* sys,double* vec,char** ground_truth,const int* semantics);
 const char* audio_error(int code);
 
 #ifdef INT_FFT

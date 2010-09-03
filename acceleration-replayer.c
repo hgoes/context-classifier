@@ -1,6 +1,6 @@
 #include "acceleration-replayer.h"
 
-static int read_acceleration_package(char** str,double* vec,struct timeval* tp,char** ground_truth) {
+static int read_acceleration_package(char** str,double* vec,struct timeval* tp,char** ground_truth,const int* semantics) {
   double data[8][6];
   long int ts_secs,ts_usecs = 0;
   char ts_fracs[10];
@@ -46,18 +46,18 @@ static int read_acceleration_package(char** str,double* vec,struct timeval* tp,c
       vars[j]+=t*t;
     }
   }
-  vec[0] = vars[0] / 8.0;
-  vec[1] = vars[1] / 8.0;
-  vec[2] = vars[2] / 8.0;
-  vec[3] = means[0];
-  vec[4] = means[1];
-  vec[5] = means[2];
-  vec[6] = vars[3] / 8.0;
-  vec[7] = vars[4] / 8.0;
-  vec[8] = vars[5] / 8.0;
-  vec[9] = means[3];
-  vec[10] = means[4];
-  vec[11] = means[5];
+  vec[semantics[1]] = means[0];
+  vec[semantics[2]] = means[1];
+  vec[semantics[3]] = means[2];
+  vec[semantics[4]] = vars[0] / 7.0;
+  vec[semantics[5]] = vars[1] / 7.0;
+  vec[semantics[6]] = vars[2] / 7.0;
+  vec[semantics[7]] = means[3];
+  vec[semantics[8]] = means[4];
+  vec[semantics[9]] = means[5];
+  vec[semantics[10]] = vars[3] / 7.0;
+  vec[semantics[11]] = vars[4] / 7.0;
+  vec[semantics[12]] = vars[5] / 7.0;
 
   tp->tv_sec = ts_secs;
   tp->tv_usec = ts_usecs;
@@ -65,6 +65,22 @@ static int read_acceleration_package(char** str,double* vec,struct timeval* tp,c
   return 0;
 }
 
+static int acceleration_semantics(const char* term) {
+  if(strcmp(term,"mean_x1")==0) return 1;
+  if(strcmp(term,"mean_y1")==0) return 2;
+  if(strcmp(term,"mean_z1")==0) return 3;
+  if(strcmp(term,"var_x1")==0) return 4;
+  if(strcmp(term,"var_y1")==0) return 5;
+  if(strcmp(term,"var_z1")==0) return 6;
+  if(strcmp(term,"mean_x2")==0) return 7;
+  if(strcmp(term,"mean_y2")==0) return 8;
+  if(strcmp(term,"mean_z2")==0) return 9;
+  if(strcmp(term,"var_x2")==0) return 10;
+  if(strcmp(term,"var_y2")==0) return 11;
+  if(strcmp(term,"var_z2")==0) return 12;
+  return -1;
+}
+
 plugin_t* get_acceleration_replayer_plugin(const char* fn) {
-  return get_replayer_plugin(fn,12,32,read_acceleration_package);
+  return get_replayer_plugin(fn,12,32,read_acceleration_package,acceleration_semantics);
 }

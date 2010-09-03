@@ -1,6 +1,6 @@
 #include "replayer.h"
 
-static int fetch_replayer_sample(replayer_t* replayer,double* arr,char** ground_truth) {
+static int fetch_replayer_sample(replayer_t* replayer,double* arr,char** ground_truth,const int* semantics) {
   char* str[replayer->line_size];
   int i;
   size_t len;
@@ -14,7 +14,7 @@ static int fetch_replayer_sample(replayer_t* replayer,double* arr,char** ground_
     }
   }
   struct timeval tp,now;
-  int res = replayer->extractor(str,arr,&tp,ground_truth);
+  int res = replayer->extractor(str,arr,&tp,ground_truth,semantics);
   for(i=0;i<replayer->line_size;i++) {
     free(str[i]);
   }
@@ -48,7 +48,7 @@ static void destroy_replayer(replayer_t* replayer) {
   free(replayer);
 }
 
-plugin_t* get_replayer_plugin(const char* fn,int vec_size,int line_size,extractor_t extractor) {
+plugin_t* get_replayer_plugin(const char* fn,int vec_size,int line_size,extractor_t extractor,semantics_mapper_t mapper) {
   FILE* fh = fopen(fn,"r");
   replayer_t* dat = malloc(sizeof(replayer_t));
   plugin_t* res = malloc(sizeof(plugin_t));
@@ -65,5 +65,6 @@ plugin_t* get_replayer_plugin(const char* fn,int vec_size,int line_size,extracto
   res->destructor = (plugin_destructor_t)destroy_replayer;
   res->skipper = (feature_skipper_t)skip_replayer_sample;
   res->callback = (feature_getter_t)fetch_replayer_sample;
+  res->semantic_mapper = (semantics_mapper_t)mapper;
   return res;
 }

@@ -49,7 +49,7 @@ int fetch_entry(accel_sensor* sens, int32_t* x,int32_t* y,int32_t* z);
 /**
  * Fetch multiple measurements and calculate a feature vector.
  */
-int fetch_accel_sample(accel_sensor* sens,double* vec);
+int fetch_accel_sample(int n,accel_sensor* sens,double* vec,const int* semantics);
 /**
  * Returns a plugin for the two acceleration sensors of the OpenMoko Freerunner phone.
  */

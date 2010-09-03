@@ -59,7 +59,7 @@ static int parse_rule(json_t* obj,rule_t* rule,int dims) {
   return -1;
 }
 
-int parse_classifier_set(const char* fp,classifier_set_t* cls) {
+int parse_classifier_set(const char* fp,classifier_set_t* cls,plugin_t* plugin) {
   json_t *json;
   json_error_t error;
 
@@ -88,16 +88,48 @@ int parse_classifier_set(const char* fp,classifier_set_t* cls) {
   }
   int dims = json_integer_value(dimension);
 
+  json_t* semantics = json_object_get(json,"semantics");
+  if(!semantics || !json_is_array(semantics)) {
+    fprintf(stderr,"\"semantics\" field not existent or not an array.\n");
+    goto out_free_type;
+  }
+
+  if(json_array_size(semantics) != dims) {
+    fprintf(stderr,"\"semantics\" array must be of length %d.\n",dims);
+    goto out_free_type;
+  }
+  
+  int* semantic_array = calloc(dims,sizeof(int));
+
+  unsigned int i;
+  for(i=0;i<dims;i++) {
+    json_t* term = json_array_get(semantics,i);
+    if(!json_is_string(term)) {
+      fprintf(stderr,"elements of \"semantics\" field must be strings.\n");
+      goto out_free_semantics;
+    }
+    if(strcmp(json_string_value(term),"last")==0) {
+      semantic_array[0] = i;
+    } else {
+      int res = plugin->semantic_mapper(json_string_value(term));
+      if(res < 0) {
+        fprintf(stderr,"undefined semantics for \"%s\".\n",json_string_value(term));
+        goto out_free_semantics;
+      }
+      semantic_array[res] = i;
+    }
+  }
+  cls->semantics = semantic_array;
+
   json_t* classifier = json_object_get(json,"classifier");
   if(!classifier || !json_is_array(classifier)) {
     fprintf(stderr,"\"classifier\" field not existent or not an array.\n");
-    goto out_free_type;
+    goto out_free_semantics;
   }
 
   cls->rules = NULL;
   rule_list_t* last_list = NULL;
 
-  unsigned int i;
   for(i=0;i<json_array_size(classifier);i++) {
     json_t* cur_cls = json_array_get(classifier,i);
     if(!json_is_object(cur_cls)) {
@@ -184,6 +216,8 @@ int parse_classifier_set(const char* fp,classifier_set_t* cls) {
     free(cls->rules);
     cls->rules = next;
   }
+ out_free_semantics:
+  free(semantic_array);
  out_free_type:
   free(cls->type);
  out_dec:
