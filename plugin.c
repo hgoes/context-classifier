@@ -19,7 +19,7 @@ pid_t dispatch_plugin(const plugin_t* plugin,rule_list_t* rules,classification_c
     scheduler_init(&sched);
 #endif
     asprintf(&eval_str,"%s evaluation",plugin->name);
-    vec[plugin->feature_vector_size] = 0.0;
+    vec[semantics[0]] = 0.0;
     while(*running) {
 #ifdef SCHEDULING
       if(idle_counter >= scheduler_get_rate(&sched) || idle_counter >= 20) {
@@ -28,7 +28,7 @@ pid_t dispatch_plugin(const plugin_t* plugin,rule_list_t* rules,classification_c
         if(plugin->callback(plugin->user_data,vec,&ground_truth,semantics) == 0) {
           MEASURED(eval_str,
                    { rules = evaluate_classifier(rules,vec,&class,&raw); });
-          vec[plugin->feature_vector_size] = raw;
+          vec[semantics[0]] = raw;
 #ifdef SCHEDULING
           scheduler_add_context(&sched,class);
 #endif
