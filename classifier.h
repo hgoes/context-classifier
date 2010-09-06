@@ -11,13 +11,17 @@
 #include "broadcaster.h"
 #include <stdio.h>
 #include <unistd.h>
-#ifdef CPU_RUNTIME
 #include <sys/times.h>
-#endif
 #include "classifier_set.h"
 #include "battery.h"
 #include <signal.h>
 #include <sys/wait.h>
 #include <sys/time.h>
+#include <getopt.h>
+
+typedef struct {
+  int show_help:1;
+  int cpu_runtime:1;
+} classifier_options;
 
 #endif

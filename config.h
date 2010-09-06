@@ -15,6 +15,5 @@
 #define FUZZY_VARIANCE 0.5
 
 //#define PERFORMANCE_OUTPUT
-#define CPU_RUNTIME
 
 #endif
