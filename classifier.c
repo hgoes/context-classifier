@@ -20,7 +20,7 @@ int parse_options(int argc,char** argv,classifier_options* opts) {
   opts->cpu_runtime = 0;
   opts->show_help = 0;
 
-  while( (c = getopt_long(argc,argv,"c",long_options,&option_index)) != -1) {
+  while( (c = getopt_long(argc,argv,"ch",long_options,&option_index)) != -1) {
     switch(c) {
     case 0:
       switch(option_index) {
