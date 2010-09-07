@@ -22,6 +22,10 @@
 typedef struct {
   int show_help:1;
   int cpu_runtime:1;
+  int udp_broadcast:1;
+  int length;
+  char** plugins;
+  char** classifiers;
 } classifier_options;
 
 #endif
