@@ -1,11 +1,26 @@
 #include "classifier.h"
 
 void usage() {
-  printf("Usage: classifier [-hcb] [--help] [--cpu-runtime] [-udp-broadcast]\n");
+  printf("Usage: classifier [-hcb] [-f FORMAT] [--help] [--cpu-runtime] [-udp-broadcast] [--format FORMAT] (PLUGIN CLASSIFIER)*\n");
   printf("\n");
   printf(" -h,--help\t\tShow this help\n");
   printf(" -c,--cpu-runtime\tPrint runtime statistics upon exit\n");
   printf(" -b,--udp-broadcast\tBroadcast classification results via UDP\n");
+  printf(" -f,--format\tOutput the classification result using a format string\n");
+  printf("\n");
+  printf("FORMAT is a string that can contain the following letters:\n");
+  printf(" 's' The current time in seconds\n");
+  printf(" 'u' The microseconds of the current time\n");
+  printf(" 'c' The classification result (a string)\n");
+  printf(" 'r' The raw value of the classification\n");
+  printf(" 'g' The expected classification result (ground truth)\n");
+  printf(" 'b' The current battery level (in percent)\n");
+  printf("PLUGIN is a string seperated by ':' describing a plugin and its options.\n");
+  printf("Available plugins:\n");
+  printf("  acceleration\t\t\tThe acceleration sensors of the OpenMoko Freerunner phone\n");
+  printf("  replay:acceleration:FILE\tReplay acceleration sensor data from FILE\n");
+  printf("\n");
+  printf("CLASSIFIER is a json file describing a classifier.\n");
 }
 
 plugin_t* load_plugin(char* options) {
@@ -38,6 +53,7 @@ int parse_options(int argc,char** argv,classifier_options* opts) {
   static struct option long_options[] = {
     { "cpu-runtime",0,NULL,0 },
     { "udp-broadcast",0,NULL,0 },
+    { "format",required_argument,NULL,0 },
     { "help",0,NULL,0 },
     { NULL,0,NULL,0 }
   };
@@ -48,8 +64,9 @@ int parse_options(int argc,char** argv,classifier_options* opts) {
   opts->cpu_runtime = 0;
   opts->udp_broadcast = 0;
   opts->show_help = 0;
+  opts->format_string = "suc";
 
-  while( (c = getopt_long(argc,argv,"chb",long_options,&option_index)) != -1) {
+  while( (c = getopt_long(argc,argv,"chbf:",long_options,&option_index)) != -1) {
     switch(c) {
     case 0:
       switch(option_index) {
@@ -60,6 +77,9 @@ int parse_options(int argc,char** argv,classifier_options* opts) {
         opts->udp_broadcast = 1;
         break;
       case 2:
+        opts->format_string = optarg;
+        break;
+      case 3:
         opts->show_help = 1;
         break;
       }
@@ -72,6 +92,9 @@ int parse_options(int argc,char** argv,classifier_options* opts) {
       break;
     case 'b':
       opts->udp_broadcast = 1;
+      break;
+    case 'f':
+      opts->format_string = optarg;
       break;
     default:
       return -1;
@@ -120,14 +143,38 @@ int main(int argc,char** argv) {
   }
 
   void callback(char* class,double raw,char* ground_truth,void* user_data) {
+    int i;
     struct timeval tv;
-    int battery_level = read_battery_level();
     gettimeofday(&tv,NULL);
-    printf("%ld\t%d\t%s\t%f\t%d",tv.tv_sec,tv.tv_usec,class,raw,battery_level);
-    if(ground_truth == NULL) {
+    for(i=0;opts.format_string[i]!='\0';i++) {
+      if(i>0) printf("\t");
+      switch(opts.format_string[i]) {
+      case 's':
+        printf("%ld",tv.tv_sec);
+        break;
+      case 'u':
+        printf("%ld",tv.tv_usec);
+        break;
+      case 'c':
+        printf("%s",class);
+        break;
+      case 'r':
+        printf("%f",raw);
+        break;
+      case 'b':
+        printf("%d",read_battery_level());
+        break;
+      case 'g':
+        if(ground_truth == NULL) {
+          printf("NONE");
+        } else {
+          printf("%s",ground_truth);
+        }
+        break;
+      }
+    }
+    if(i>0) {
       printf("\n");
-    } else {
-      printf("\t%s\n",ground_truth);
     }
     if(opts.udp_broadcast) {
       send_broadcast_packet(sock,tv.tv_sec,tv.tv_usec,class,(int)(raw*255.0),9);

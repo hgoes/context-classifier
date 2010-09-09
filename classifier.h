@@ -23,6 +23,7 @@ typedef struct {
   int show_help:1;
   int cpu_runtime:1;
   int udp_broadcast:1;
+  char* format_string;
   int length;
   char** plugins;
   char** classifiers;
