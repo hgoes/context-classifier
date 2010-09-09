@@ -15,8 +15,8 @@ void usage() {
   printf(" 'r' The raw value of the classification\n");
   printf(" 'g' The expected classification result (ground truth)\n");
   printf(" 'b' The current battery level (in percent)\n");
-  printf("PLUGIN is a string seperated by ':' describing a plugin and its options.\n");
-  printf("Available plugins:\n");
+  printf("\n");
+  printf("PLUGIN is a string seperated by ':' describing a plugin and its options. Available plugins:\n");
   printf("  acceleration\t\t\tThe acceleration sensors of the OpenMoko Freerunner phone\n");
   printf("  replay:acceleration:FILE\tReplay acceleration sensor data from FILE\n");
   printf("\n");
