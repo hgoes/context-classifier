@@ -49,6 +49,25 @@ plugin_t* load_plugin(char* options) {
   return NULL;
 }
 
+int check_format_string(const char* fmt) {
+  int i;
+  for(i=0;fmt[i]!='\0';i++) {
+    switch(fmt[i]) {
+    case 's':
+    case 'u':
+    case 'c':
+    case 'r':
+    case 'b':
+    case 'g':
+      break;
+    default:
+      fprintf(stderr,"Invalid letter in format string: '%c'\n",fmt[i]);
+      return -1;
+    }
+  }
+  return 0;
+}
+
 int parse_options(int argc,char** argv,classifier_options* opts) {
   static struct option long_options[] = {
     { "cpu-runtime",0,NULL,0 },
@@ -115,6 +134,10 @@ int parse_options(int argc,char** argv,classifier_options* opts) {
 int main(int argc,char** argv) {
   classifier_options opts;
   if(parse_options(argc,argv,&opts) != 0) {
+    usage();
+    exit(-1);
+  }
+  if(check_format_string(opts.format_string) != 0) {
     usage();
     exit(-1);
   }
