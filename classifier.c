@@ -1,12 +1,13 @@
 #include "classifier.h"
 
 void usage() {
-  printf("Usage: classifier [-hcb] [-f FORMAT] [--help] [--cpu-runtime] [-udp-broadcast] [--format FORMAT] (PLUGIN CLASSIFIER)*\n");
+  printf("Usage: classifier [-hcbs] [-f FORMAT] [--help] [--cpu-runtime] [-udp-broadcast] [--format FORMAT] (PLUGIN CLASSIFIER)*\n");
   printf("\n");
   printf(" -h,--help\t\tShow this help\n");
   printf(" -c,--cpu-runtime\tPrint runtime statistics upon exit\n");
   printf(" -b,--udp-broadcast\tBroadcast classification results via UDP\n");
-  printf(" -f,--format\tOutput the classification result using a format string\n");
+  printf(" -f,--format\t\tOutput the classification result using a format string\n");
+  printf(" -s,--scheduling\tUse scheduling algorithm to conserve energy\n");
   printf("\n");
   printf("FORMAT is a string that can contain the following letters:\n");
   printf(" 's' The current time in seconds\n");
@@ -73,6 +74,7 @@ int parse_options(int argc,char** argv,classifier_options* opts) {
     { "cpu-runtime",0,NULL,0 },
     { "udp-broadcast",0,NULL,0 },
     { "format",required_argument,NULL,0 },
+    { "scheduling",0,NULL,0 },
     { "help",0,NULL,0 },
     { NULL,0,NULL,0 }
   };
@@ -83,9 +85,10 @@ int parse_options(int argc,char** argv,classifier_options* opts) {
   opts->cpu_runtime = 0;
   opts->udp_broadcast = 0;
   opts->show_help = 0;
+  opts->scheduling = 0;
   opts->format_string = "suc";
 
-  while( (c = getopt_long(argc,argv,"chbf:",long_options,&option_index)) != -1) {
+  while( (c = getopt_long(argc,argv,"chbf:s",long_options,&option_index)) != -1) {
     switch(c) {
     case 0:
       switch(option_index) {
@@ -99,6 +102,9 @@ int parse_options(int argc,char** argv,classifier_options* opts) {
         opts->format_string = optarg;
         break;
       case 3:
+        opts->scheduling = 1;
+        break;
+      case 4:
         opts->show_help = 1;
         break;
       }
@@ -114,6 +120,9 @@ int parse_options(int argc,char** argv,classifier_options* opts) {
       break;
     case 'f':
       opts->format_string = optarg;
+      break;
+    case 's':
+      opts->scheduling = 1;
       break;
     default:
       return -1;
@@ -223,7 +232,7 @@ int main(int argc,char** argv) {
       fprintf(stderr,"Failed to parse classifier %s\n",opts.classifiers[i]);
       exit(-1);
     }
-    pids[i] = dispatch_plugin(plugin,cls.rules,callback,NULL,&running,cls.semantics);
+    pids[i] = dispatch_plugin(plugin,cls.rules,callback,NULL,&running,cls.semantics,opts.scheduling);
   }
 
   for(i=0;i<opts.length;i++) {

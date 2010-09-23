@@ -64,7 +64,7 @@ void free_plugin(plugin_t* plugin);
 /**
  * Spawn a new thread which handles the plugin.
  */
-pid_t dispatch_plugin(const plugin_t* plugin,rule_list_t* rules,classification_cb_t cb,void* cb_data,int* running,const int* semantics);
+pid_t dispatch_plugin(const plugin_t* plugin,rule_list_t* rules,classification_cb_t cb,void* cb_data,int* running,const int* semantics,int scheduling);
 
 #endif
 /*
