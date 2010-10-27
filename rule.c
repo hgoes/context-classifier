@@ -5,6 +5,7 @@ void init_rule(rule_t* rule,int n) {
   rule->rvec = calloc(sizeof(double),n+1);
   rule->covar = calloc(sizeof(double),n*n);
   rule->vmean = calloc(sizeof(double),n);
+  rule->bitvector = 0;
 }
 
 void destroy_rule(rule_t* rule) {
@@ -28,7 +29,20 @@ void print_rule(rule_t* rule) {
   for(i=0;i<n*n;i++) {
     printf("%lf ",rule->covar[i]);
   }
-  printf("]\n");
+  printf("]");
+  if(rule->bitvector == 0) {
+    printf("\n");
+  } else {
+    printf(" (");
+    for(i=0;i<n;i++) {
+      if((rule->bitvector | (1 << i)) == rule->bitvector) {
+        printf("1");
+      } else {
+        printf("0");
+      }
+    }
+    printf(")\n");
+  }
 }
 
 double evaluate_rule(const rule_t* rule,const double* vec) {
@@ -42,17 +56,15 @@ double weigh_rule(const rule_t* rule,const double* vec) {
   double* t = calloc(sizeof(double),n);
   vec_subtract(n,vec,rule->vmean,t);
   for(i=0;i<n;i++) {
-    double tmp = 0;
-    for(j=0;j<n;j++) {
-      //printf("%lf ",t[j]);
-      //printf("TMP: %d %lf\n",j,t[j]);
-      tmp+=rule->covar[i*n+j]*t[j];
+    if((rule->bitvector | (1 << i)) != rule->bitvector) {
+      double tmp = 0;
+      for(j=0;j<n;j++) {
+        tmp+=rule->covar[i*n+j]*t[j];
+      }
+      res += t[i]*tmp;
     }
-    //printf("\n");
-    res += t[i]*tmp;
   }
   free(t);
-  //printf("TMP: %lf\n",exp(-0.5*res));
   return exp(-0.5*res);
 }
 

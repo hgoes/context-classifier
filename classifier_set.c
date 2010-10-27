@@ -53,6 +53,33 @@ static int parse_rule(json_t* obj,rule_t* rule,int dims) {
   if(load_array(obj,"consequence",dims+1,rule->rvec) < 0) {
     goto dealloc_rule;
   }
+  json_t* bitvec = json_object_get(obj,"bitvector");
+  if(bitvec != NULL) {
+    if(!json_is_array(bitvec)) {
+      fprintf(stderr,"bitvector field of rule must be an array\n");
+      goto dealloc_rule;
+    }
+    if(json_array_size(bitvec) != dims) {
+      fprintf(stderr,"bitvector field of rule must have the same dimension as the rule\n");
+      goto dealloc_rule;
+    }
+    int i;
+    for(i=0;i<dims;i++) {
+      json_t* cur = json_array_get(bitvec,i);
+      if(!json_is_integer(cur)) {
+        fprintf(stderr,"all elements in the bitvector must be integers\n");
+        goto dealloc_rule;
+      }
+      int val = json_integer_value(cur);
+      if(val != 0 && val != 1) {
+        fprintf(stderr,"elements in the bitvector must be either 0 or 1\n");
+        goto dealloc_rule;
+      }
+      if(val==1) {
+        rule->bitvector = rule->bitvector | (1 << i);
+      }
+    }
+  }
   return 0;
  dealloc_rule:
   destroy_rule(rule);

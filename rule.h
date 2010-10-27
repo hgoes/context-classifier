@@ -28,6 +28,8 @@ typedef struct {
   double* covar;
   ///A mean vector \f$m(R)\f$ of size \f$n\f$
   double* vmean;
+  ///A bitvector encoding which columns of the feature vector to ignore. 0 means all columns are taken into consideration.
+  int bitvector;
 } rule_t;
 
 /**
